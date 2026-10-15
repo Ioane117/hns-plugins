@@ -3,6 +3,7 @@
 #include "hns_config.h"
 #include "utils/utils.h"
 #include "utils/gameconfig.h"
+#include "utils/interfaces.h"
 #include "sdk/services.h"
 #include "sdk/takedamageinfo.h"
 #include "sdk/entity/cbaseplayerweapon.h"
@@ -18,6 +19,8 @@ namespace hns::weapons
 	static_global bool damageHooked {};
 	static_global u32 removedCount {};
 	static_global u32 damageOverrides {};
+	// Last tick a "use weapon_knife" was sent to each slot, so an empty-handed player is not spammed.
+	static_global i32 lastEquipTick[MAXPLAYERS + 1] {};
 
 	enum class WeaponKind
 	{
@@ -146,17 +149,41 @@ namespace hns::weapons
 				weapon->m_nNextSecondaryAttackTick(tick + 64);
 			}
 		}
+		bool hasKnife = false;
+		FOR_EACH_VEC(*weapons, i)
+		{
+			CBasePlayerWeapon *weapon = (*weapons)[i].Get();
+			if (weapon && Classify(weapon) == WeaponKind::Knife)
+			{
+				hasKnife = true;
+				break;
+			}
+		}
+		CBasePlayerWeapon *active = pawn->m_pWeaponServices()->m_hActiveWeapon().Get();
+		bool activeRemoved = false;
 		for (i32 i = 0; i < removeCount; i++)
 		{
+			activeRemoved |= (toRemove[i] == active);
 			RemovePlayerItem(pawn, toRemove[i]);
 			g_pKZUtils->RemoveEntity(toRemove[i]);
 			removedCount++;
+		}
+		// Spawning with a pistol in hand and having it removed leaves the player holding nothing; the game does not switch on
+		// its own. Pull the knife out, the same as the player pressing their knife key.
+		if (settings.equipKnife && hasKnife && (activeRemoved || !active))
+		{
+			i32 slot = player->GetPlayerSlot().Get();
+			if (tick - lastEquipTick[slot] >= 16 || tick < lastEquipTick[slot])
+			{
+				lastEquipTick[slot] = tick;
+				interfaces::pEngine->ClientCommand(player->GetPlayerSlot(), "use weapon_knife");
+			}
 		}
 	}
 
 	void OnGameFrame()
 	{
-		if (!settings.noGuns && !settings.knifeCTOnly && !settings.knifeStabOnly)
+		if (!settings.noGuns && !settings.knifeCTOnly && !settings.knifeStabOnly && !settings.equipKnife)
 		{
 			return;
 		}

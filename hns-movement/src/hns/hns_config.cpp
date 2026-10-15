@@ -35,6 +35,7 @@ namespace hns::config
 			{"hns_no_guns",             SettingDef::Bool,  &settings.noGuns,               "1 = nobody can hold a gun or taser; any that a player gets is removed."},
 			{"hns_knife_ct_only",       SettingDef::Bool,  &settings.knifeCTOnly,          "1 = everyone keeps a knife but only CTs can attack with it (Ts keep their grenades)."},
 			{"hns_knife_stab_only",     SettingDef::Bool,  &settings.knifeStabOnly,        "1 = knife slash (attack1) is disabled, only the right-click stab works."},
+			{"hns_equip_knife",         SettingDef::Bool,  &settings.equipKnife,           "1 = switch to the knife when a player spawns or is left holding nothing."},
 			{"hns_knife_damage",        SettingDef::Float, &settings.knifeDamage,          "Damage of every CT knife hit on a T, backstabs included. 0 = game default."},
 			{"hns_team_switch",         SettingDef::Bool,  &settings.teamSwitch,           "1 = swap teams when the CTs win."},
 			{"hns_t_winstreak_switch",  SettingDef::Int,   &settings.tWinStreakSwitch,     "Also swap teams after this many T wins in a row. 0 = never."},
