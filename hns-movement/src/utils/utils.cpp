@@ -1,4 +1,5 @@
 
+#include <filesystem>
 #include "utils.h"
 #include "hns_plugin.h"
 #include "player/player.h"

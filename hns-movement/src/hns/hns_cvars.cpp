@@ -14,9 +14,29 @@ namespace hns::cvars
 	static_global bool hasWritten[HNSCVAR_COUNT] {};
 	static_global bool warned[HNSCVAR_COUNT] {};
 
-	static_function CVValue_t MakeValue(Type type, f32 value)
+	// CVValue_t holds a CUtlString in its union, so it has no copy assignment. Only the primitive members are used here.
+	static_function void SetValue(CVValue_t &dst, Type type, f32 value)
 	{
-		return type == Type::Bool ? CVValue_t(value != 0.0f) : CVValue_t((float32)value);
+		if (type == Type::Bool)
+		{
+			dst.m_bValue = value != 0.0f;
+		}
+		else
+		{
+			dst.m_fl32Value = value;
+		}
+	}
+
+	static_function void CopyValue(CVValue_t &dst, Type type, const CVValue_t &src)
+	{
+		if (type == Type::Bool)
+		{
+			dst.m_bValue = src.m_bValue;
+		}
+		else
+		{
+			dst.m_fl32Value = src.m_fl32Value;
+		}
 	}
 
 	static_function bool ValuesEqual(Type type, const CVValue_t &a, const CVValue_t &b)
@@ -119,11 +139,11 @@ namespace hns::cvars
 		if (def.type == Type::Bool)
 		{
 			bool b = KZ_STREQI(value, "true") || (utils::IsNumeric(value) && atof(value) != 0.0);
-			enforced[index] = CVValue_t(b);
+			SetValue(enforced[index], def.type, b ? 1.0f : 0.0f);
 		}
 		else
 		{
-			enforced[index] = CVValue_t((float32)atof(value));
+			SetValue(enforced[index], def.type, (f32)atof(value));
 		}
 		return true;
 	}
@@ -132,7 +152,7 @@ namespace hns::cvars
 	{
 		for (i32 i = 0; i < HNSCVAR_COUNT; i++)
 		{
-			enforced[i] = MakeValue(definitions[i].type, definitions[i].defaultValue);
+			SetValue(enforced[i], definitions[i].type, definitions[i].defaultValue);
 		}
 	}
 
@@ -172,7 +192,7 @@ namespace hns::cvars
 				// Direct write, like CS2KZ: Set() would fire change callbacks and replication every tick.
 				refs[i]->TypeTraits()->Copy(current, enforced[i]);
 			}
-			lastWritten[i] = enforced[i];
+			CopyValue(lastWritten[i], type, enforced[i]);
 			hasWritten[i] = true;
 		}
 	}
@@ -230,7 +250,9 @@ namespace hns::cvars
 			{
 				V_snprintf(game, sizeof(game), "?");
 			}
-			FormatValue(def.type, MakeValue(def.type, def.kzValue), kz, sizeof(kz));
+			CVValue_t kzValue;
+			SetValue(kzValue, def.type, def.kzValue);
+			FormatValue(def.type, kzValue, kz, sizeof(kz));
 			META_CONPRINTF("%-34s %-10s %-10s %-10s\n", def.name, ours, game, kz);
 		}
 	}

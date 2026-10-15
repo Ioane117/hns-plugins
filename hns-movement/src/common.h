@@ -6,9 +6,6 @@
 
 #include <ISmmPlugin.h>
 #include <stdint.h>
-// This is quite wild, this library must be included here so memory corruption doesn't happen on windows...
-#define TINYFORMAT_USE_VARIADIC_TEMPLATES
-#include "vendor/tinyformat.h"
 
 #include "entity2/entitysystem.h"
 #include "tier0/dbg.h"
@@ -75,5 +72,5 @@ typedef double f64;
 #define VPROF_LEVEL 1
 
 // clang-format off
-#define VPROF_SCOPE_BEGIN_KZ(tag) do { VPROF_(tag, 1, "CS2KZ", false, 0)
+#define VPROF_SCOPE_BEGIN_HNS(tag) do { VPROF_(tag, 1, "HNS", false, 0)
 // clang-format on

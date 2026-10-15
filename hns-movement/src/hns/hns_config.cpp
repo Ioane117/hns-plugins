@@ -218,7 +218,6 @@ namespace hns::config
 			return true;
 		}
 		// Built from the compiled-in defaults, so it always matches this build.
-		Settings defaults;
 		std::string out = "// hns-movement configuration. Edit, then run hns_reload (server console or rcon).\n"
 						  "// Movement cvars listed here are enforced every tick; changing them with the console or a map cfg has no lasting\n"
 						  "// effect. Everything else (game_type, mp_*, bot_*, sv_falldamage_scale, mp_solid_teammates) stays in your server cfg.\n\n"
