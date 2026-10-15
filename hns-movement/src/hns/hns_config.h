@@ -46,6 +46,8 @@ namespace hns::config
 		bool disableAutokick = true;
 		// mp_team_intro_time 0: no frozen team intro when warmup ends (the CT freeze would only start after it).
 		bool disableTeamIntro = true;
+		// Hide the "<player> is joining the Terrorists/Counter-Terrorists" chat line on every team change.
+		bool silentTeamChange = true;
 		// Damage of every CT knife hit on a T. 0 = game default (slash 40, stab 65, backstab 180).
 		f32 knifeDamage = 55.0f;
 		// Swap CTs and Ts when the CTs win.

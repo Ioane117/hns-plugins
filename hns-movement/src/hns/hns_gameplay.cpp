@@ -188,6 +188,14 @@ namespace hns::gameplay
 				}
 			}
 		}
+		else if (KZ_STREQI(name, "player_team"))
+		{
+			// The client prints the join message from this event unless it is flagged silent.
+			if (settings.silentTeamChange)
+			{
+				event->SetBool("silent", true);
+			}
+		}
 		else if (KZ_STREQI(name, "player_spawn"))
 		{
 			// userid is the controller's entity index - 1 (player slot) for player_spawn in CS2.
