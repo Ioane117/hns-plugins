@@ -85,6 +85,12 @@ public:
 	void UpdateAngleHistory();
 	void CalcPrestrafe();
 	f32 GetPrestrafeGain();
+
+	// Game's max speed for this tick before the plugin's clamp (weapon dependent). For hns_status.
+	f32 GetOriginalMaxSpeed()
+	{
+		return this->originalMaxSpeed;
+	}
 	// HNS: 250 + prestrafe while hns_ps_enabled, otherwise no clamp (negative = leave the engine's max speed alone).
 	f32 GetGroundMaxSpeed();
 

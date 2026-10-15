@@ -1,5 +1,6 @@
 #include "hns_weapons.h"
 #include "hns_player.h"
+#include "hns_movement.h"
 #include "hns_config.h"
 #include "utils/utils.h"
 #include "utils/gameconfig.h"
@@ -331,6 +332,14 @@ namespace hns::weapons
 			if (!pawn || !pawn->m_pWeaponServices())
 			{
 				continue;
+			}
+			{
+				CBasePlayerWeapon *active = pawn->m_pWeaponServices()->m_hActiveWeapon().Get();
+				Vector velocity;
+				player->GetVelocity(&velocity);
+				META_CONPRINTF("    holding %s: game max speed %.1f, velocity modifier %.3f, prestrafe gain %.1f, speed %.1f\n",
+							   active ? active->GetClassname() : "nothing", player->movement ? player->movement->GetOriginalMaxSpeed() : -1.0f,
+							   pawn->m_flVelocityModifier(), player->movement ? player->movement->GetPrestrafeGain() : -1.0f, velocity.Length2D());
 			}
 			CUtlVector<CHandle<CBasePlayerWeapon>> *weapons = pawn->m_pWeaponServices()->m_hMyWeapons();
 			FOR_EACH_VEC(*weapons, w)
