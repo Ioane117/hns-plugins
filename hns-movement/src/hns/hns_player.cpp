@@ -2,6 +2,7 @@
 #include "hns_movement.h"
 #include "hns_cvars.h"
 #include "hns_config.h"
+#include "hns_gameplay.h"
 #include "utils/utils.h"
 
 #include "vprof.h"
@@ -62,6 +63,7 @@ void HNSPlayer::OnPhysicsSimulate()
 	hns::cvars::ApplyAll();
 	this->enableWaterFix = this->movement->EnableWaterFix();
 	this->movement->OnPhysicsSimulate();
+	hns::gameplay::ApplyFreezeToWeapons(this);
 }
 
 void HNSPlayer::OnPhysicsSimulatePost()
@@ -85,12 +87,18 @@ void HNSPlayer::OnProcessMovement()
 	hns::cvars::ApplyAll();
 	this->enableWaterFix = this->movement->EnableWaterFix();
 	this->movement->OnProcessMovement();
+	hns::gameplay::ApplyFreezeToMovement(this);
 }
 
 void HNSPlayer::OnProcessMovementPost()
 {
 	VPROF_BUDGET(__func__, "HNS");
 	this->movement->OnProcessMovementPost();
+	if (hns::gameplay::IsFrozen(this) && this->GetPlayerPawn())
+	{
+		// Networked: the client predicts zero speed too, so a frozen CT does not rubber-band when pressing keys.
+		this->GetPlayerPawn()->m_flVelocityModifier(0.0f);
+	}
 	MovementPlayer::OnProcessMovementPost();
 }
 

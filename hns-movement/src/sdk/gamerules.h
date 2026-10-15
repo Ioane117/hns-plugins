@@ -18,6 +18,8 @@ public:
 	SCHEMA_FIELD(GameTime_t, m_flGameStartTime)
 	SCHEMA_FIELD(int, m_iRoundWinStatus);
 	SCHEMA_FIELD(int, m_iRoundTime);
+	SCHEMA_FIELD(bool, m_bWarmupPeriod);
+	SCHEMA_FIELD(bool, m_bFreezePeriod);
 };
 
 class CCSGameRulesProxy : public CBaseEntity

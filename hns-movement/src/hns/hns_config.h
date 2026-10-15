@@ -26,6 +26,14 @@ namespace hns::config
 		// leaves the ground without jumping (e.g. sliding off a surf ramp lip), which caps surf speed. 1 = HNS fix.
 		bool perfRequiresJump = true;
 
+		// ---- HNS round flow (replaces ChaseMod's freeze and team switch) ----
+		// Seconds CTs stay frozen at round start (Ts move freely). 0 = off.
+		f32 ctFreezeTime = 15.0f;
+		// Swap CTs and Ts when the CTs win.
+		bool teamSwitch = true;
+		// Also swap after this many T wins in a row. 0 = never.
+		i32 tWinStreakSwitch = 5;
+
 		// Rampbug fix thresholds (CS2KZ Classic constants, tuned at sv_airaccelerate 100). Exposed for retuning at 1000.
 		f32 rampbugThreshold = 0.999f; // Normals with a dot product below this count as a different plane.
 		f32 rampbugSamePlane = 0.99f;  // Offset trace counts as the same ramp above this dot product.

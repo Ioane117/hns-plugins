@@ -14,6 +14,7 @@
 #include "hns/hns_cvars.h"
 #include "hns/hns_config.h"
 #include "hns/hns_commands.h"
+#include "hns/hns_gameplay.h"
 
 #include "tier0/memdbgon.h"
 
@@ -99,6 +100,7 @@ void HNSPlugin::OnLevelInit(char const *pMapName, char const *pMapEntities, char
 							bool background)
 {
 	m_sCurrentMap = pMapName;
+	hns::gameplay::OnMapStart();
 }
 
 bool HNSPlugin::Pause(char *error, size_t maxlen)

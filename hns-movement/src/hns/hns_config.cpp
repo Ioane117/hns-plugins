@@ -16,7 +16,8 @@ namespace hns::config
 		enum
 		{
 			Bool,
-			Float
+			Float,
+			Int
 		} type;
 		void *target;
 		const char *description;
@@ -28,6 +29,9 @@ namespace hns::config
 		static_persist const SettingDef defs[] = {
 			{"hns_ps_enabled",          SettingDef::Bool,  &settings.psEnabled,            "1 = CS2KZ prestrafe + 250 ground clamp + KZ perf formula. 0 = sv_maxspeed on ground, perf keeps max(landing, takeoff) speed."},
 			{"hns_perf_requires_jump",  SettingDef::Bool,  &settings.perfRequiresJump,     "1 = perf speed rewrite only on real jumps (keeps surf speed when skimming/leaving ground). 0 = CS2KZ behaviour."},
+			{"hns_ct_freeze_time",      SettingDef::Float, &settings.ctFreezeTime,         "Seconds CTs are frozen at round start; Ts can move and jump. 0 = off."},
+			{"hns_team_switch",         SettingDef::Bool,  &settings.teamSwitch,           "1 = swap teams when the CTs win."},
+			{"hns_t_winstreak_switch",  SettingDef::Int,   &settings.tWinStreakSwitch,     "Also swap teams after this many T wins in a row. 0 = never."},
 			{"hns_rampbug_threshold",   SettingDef::Float, &settings.rampbugThreshold,     "Rampbug fix: dot product below which two normals are different planes (CS2KZ: 0.999)."},
 			{"hns_rampbug_same_plane",  SettingDef::Float, &settings.rampbugSamePlane,     "Rampbug fix: offset trace hitting a plane above this dot product counts as the same ramp (CS2KZ: 0.99)."},
 			{"hns_rampbug_min_distance",SettingDef::Float, &settings.rampbugMinDistance,   "Rampbug fix: offset trace must go this much further to be used (CS2KZ: 1.0)."},
@@ -52,6 +56,10 @@ namespace hns::config
 			if (defs[i].type == SettingDef::Bool)
 			{
 				*(bool *)defs[i].target = KZ_STREQI(value, "true") || atof(value) != 0.0;
+			}
+			else if (defs[i].type == SettingDef::Int)
+			{
+				*(i32 *)defs[i].target = atoi(value);
 			}
 			else
 			{
@@ -241,6 +249,10 @@ namespace hns::config
 			{
 				V_snprintf(line, sizeof(line), "%-26s %d // %s\n", defs[i].name, *(bool *)defs[i].target ? 1 : 0, defs[i].description);
 			}
+			else if (defs[i].type == SettingDef::Int)
+			{
+				V_snprintf(line, sizeof(line), "%-26s %d // %s\n", defs[i].name, *(i32 *)defs[i].target, defs[i].description);
+			}
 			else
 			{
 				V_snprintf(line, sizeof(line), "%-26s %g // %s\n", defs[i].name, *(f32 *)defs[i].target, defs[i].description);
@@ -267,6 +279,10 @@ namespace hns::config
 			if (defs[i].type == SettingDef::Bool)
 			{
 				META_CONPRINTF("%-26s %d\n", defs[i].name, *(bool *)defs[i].target ? 1 : 0);
+			}
+			else if (defs[i].type == SettingDef::Int)
+			{
+				META_CONPRINTF("%-26s %d\n", defs[i].name, *(i32 *)defs[i].target);
 			}
 			else
 			{

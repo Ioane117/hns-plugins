@@ -47,6 +47,7 @@ enum HNSMovementCvar : int
 	HNSCVAR_SV_LEGACY_JUMP,
 	HNSCVAR_SV_BHOP_TIME_WINDOW,
 	HNSCVAR_MP_SOLID_TEAMMATES,
+	HNSCVAR_MP_FREEZETIME,
 	HNSCVAR_COUNT,
 };
 
@@ -81,7 +82,8 @@ namespace hns::cvars
 		{"sv_accelerate",                   Type::Float, 6.5f,     6.5f},
 		{"sv_accelerate_use_weapon_speed",  Type::Bool,  0.0f,     0.0f},
 		{"sv_airaccelerate",                Type::Float, 1000.0f,  100.0f},
-		{"sv_air_max_wishspeed",            Type::Float, 30.0f,    30.0f},
+		// HNS: 35 instead of 30 gives ~17% more speed per air strafe (surf and bhop air gain).
+		{"sv_air_max_wishspeed",            Type::Float, 35.0f,    30.0f},
 		{"sv_autobunnyhopping",             Type::Bool,  0.0f,     0.0f},
 		{"sv_bounce",                       Type::Float, 0.0f,     0.0f},
 		{"sv_enablebunnyhopping",           Type::Bool,  1.0f,     1.0f},
@@ -112,6 +114,8 @@ namespace hns::cvars
 		{"sv_bhop_time_window",             Type::Float, 0.05f,    0.02f},
 		// 0 = teammates pass through each other, 1 = solid, 2 = solid but can't stand on each other's heads.
 		{"mp_solid_teammates",              Type::Int,   0.0f,     0.0f, "hns_solid_teammates"},
+		// The engine freezetime freezes both teams. HNS freezes only the CTs (hns_ct_freeze_time), so keep this at 0.
+		{"mp_freezetime",                   Type::Int,   0.0f,     0.0f, "hns_engine_freezetime"},
 	};
 	// clang-format on
 

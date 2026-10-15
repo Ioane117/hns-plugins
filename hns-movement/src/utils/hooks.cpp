@@ -17,6 +17,7 @@
 #include "hns_plugin.h"
 #include "hns/hns_player.h"
 #include "hns/hns_movement.h"
+#include "hns/hns_gameplay.h"
 #include "sdk/usercmd.h"
 
 #include "vprof.h"
@@ -68,6 +69,7 @@ static KHook::Return<void> GameFramePre(ISource2Server *pThis, bool simulating, 
 {
 	VPROF_BUDGET(__func__, "HNS");
 	g_HNSPlugin.serverGlobals = *(g_pKZUtils->GetGlobals());
+	hns::gameplay::OnGameFrame();
 	return {KHook::Action::Ignore};
 }
 
@@ -118,6 +120,10 @@ static KHook::Return<bool> FireEventPre(IGameEventManager2 *pThis, IGameEvent *e
 	{
 		// Same point CS2KZ re-hooks entities: the entity list is rebuilt on round restart.
 		hooks::HookEntities();
+	}
+	if (event)
+	{
+		hns::gameplay::OnFireEvent(event);
 	}
 	return {KHook::Action::Ignore, true};
 }
