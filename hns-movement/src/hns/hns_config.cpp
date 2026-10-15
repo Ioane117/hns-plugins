@@ -27,6 +27,7 @@ namespace hns::config
 		// clang-format off
 		static_persist const SettingDef defs[] = {
 			{"hns_ps_enabled",          SettingDef::Bool,  &settings.psEnabled,            "1 = CS2KZ prestrafe + 250 ground clamp + KZ perf formula. 0 = sv_maxspeed on ground, perf keeps max(landing, takeoff) speed."},
+			{"hns_perf_requires_jump",  SettingDef::Bool,  &settings.perfRequiresJump,     "1 = perf speed rewrite only on real jumps (keeps surf speed when skimming/leaving ground). 0 = CS2KZ behaviour."},
 			{"hns_rampbug_threshold",   SettingDef::Float, &settings.rampbugThreshold,     "Rampbug fix: dot product below which two normals are different planes (CS2KZ: 0.999)."},
 			{"hns_rampbug_same_plane",  SettingDef::Float, &settings.rampbugSamePlane,     "Rampbug fix: offset trace hitting a plane above this dot product counts as the same ramp (CS2KZ: 0.99)."},
 			{"hns_rampbug_min_distance",SettingDef::Float, &settings.rampbugMinDistance,   "Rampbug fix: offset trace must go this much further to be used (CS2KZ: 1.0)."},

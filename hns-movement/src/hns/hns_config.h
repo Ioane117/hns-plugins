@@ -22,6 +22,10 @@ namespace hns::config
 		// Off = no ground speed clamp (sv_maxspeed applies) and a perf keeps max(landing speed, takeoff speed).
 		bool psEnabled = true;
 
+		// Only apply the perf speed/height rewrite when the player actually jumped. CS2KZ also applies it when the player
+		// leaves the ground without jumping (e.g. sliding off a surf ramp lip), which caps surf speed. 1 = HNS fix.
+		bool perfRequiresJump = true;
+
 		// Rampbug fix thresholds (CS2KZ Classic constants, tuned at sv_airaccelerate 100). Exposed for retuning at 1000.
 		f32 rampbugThreshold = 0.999f; // Normals with a dot product below this count as a different plane.
 		f32 rampbugSamePlane = 0.99f;  // Offset trace counts as the same ramp above this dot product.

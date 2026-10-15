@@ -115,6 +115,14 @@ void HNSMovementService::OnStopTouchGround()
 	this->player->GetVelocity(&velocity);
 
 	f32 timeOnGround = this->player->takeoffTime - this->player->landingTime;
+	// HNS: CS2KZ treats ANY ground contact shorter than the perf window as a perf, including sliding off a surf ramp lip
+	// or skimming a flat section for one tick without jumping. The perf then rewrites horizontal speed with the KZ curve,
+	// which cuts 1000 u/s down to ~334 u/s. Harmless at KZ speeds, but it kills surf speed on an airaccel-1000 server.
+	// With hns_perf_requires_jump (default 1) only real jumps get the perf treatment.
+	if (settings.perfRequiresJump && !this->player->jumped)
+	{
+		return;
+	}
 	// Perf
 	if (timeOnGround <= BH_PERF_WINDOW && !this->player->possibleLadderHop)
 	{
