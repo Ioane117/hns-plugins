@@ -74,6 +74,11 @@ client itself (`SendConVarValue`) when the player becomes active. hns-movement d
 
 ## Build
 
+Windows (local test server): install Build Tools for Visual Studio 2022 with "Desktop development with C++", Git and
+Python 3, then run `build-windows.bat`. It clones this repo from `hns-movement.gitbundle`, fetches the SDK and Metamod,
+builds, and copies the plugin into the server (it never overwrites an existing cfg).
+
+
 Linux (what DatHost runs), same toolchain as CS2KZ:
 
 ```

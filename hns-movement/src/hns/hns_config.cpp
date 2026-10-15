@@ -2,6 +2,7 @@
 #include "hns_cvars.h"
 #include "utils/utils.h"
 
+#include <cctype>
 #include <string>
 #include <vector>
 
