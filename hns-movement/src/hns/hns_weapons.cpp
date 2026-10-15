@@ -91,10 +91,6 @@ namespace hns::weapons
 		{
 			return settings.noGuns;
 		}
-		if (kind == WeaponKind::Knife)
-		{
-			return settings.knifeCTOnly && team == CS_TEAM_T;
-		}
 		return false;
 	}
 
@@ -134,10 +130,20 @@ namespace hns::weapons
 				}
 				continue;
 			}
-			if (kind == WeaponKind::Knife && settings.knifeStabOnly && weapon->m_nNextPrimaryAttackTick() < tick + 32)
+			if (kind != WeaponKind::Knife)
 			{
-				// Slash disabled; the client predicts from this value too, so no swing animation plays.
+				continue;
+			}
+			// The client predicts from these values too, so a blocked attack plays no swing animation.
+			bool blockSlash = settings.knifeStabOnly || (settings.knifeCTOnly && team != CS_TEAM_CT);
+			bool blockStab = settings.knifeCTOnly && team != CS_TEAM_CT;
+			if (blockSlash && weapon->m_nNextPrimaryAttackTick() < tick + 32)
+			{
 				weapon->m_nNextPrimaryAttackTick(tick + 64);
+			}
+			if (blockStab && weapon->m_nNextSecondaryAttackTick() < tick + 32)
+			{
+				weapon->m_nNextSecondaryAttackTick(tick + 64);
 			}
 		}
 		for (i32 i = 0; i < removeCount; i++)

@@ -7,7 +7,7 @@ class CTakeDamageInfo;
 
 // HNS weapon rules (hns_no_guns, hns_knife_ct_only, hns_knife_stab_only, hns_knife_damage):
 //   - No guns for anyone: any firearm or taser a player holds (bought, picked up, given by the map) is removed.
-//   - Only CTs have a knife: Ts' knives are removed, Ts keep their grenades.
+//   - Everyone keeps a knife, but only CTs can attack with it (Ts' knives can't slash or stab). Ts keep their grenades.
 //   - Knife: primary attack (slash) is disabled, only the right-click stab works.
 //   - Every CT knife hit on a T does a fixed amount of damage (default 55), backstabs included.
 namespace hns::weapons

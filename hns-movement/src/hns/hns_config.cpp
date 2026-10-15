@@ -33,7 +33,7 @@ namespace hns::config
 			{"hns_freeze_no_falldamage",SettingDef::Bool,  &settings.freezeNoFallDamage,   "1 = sv_falldamage_scale is 0 while CTs are frozen, restored afterwards."},
 			{"hns_freeze_effects",      SettingDef::Bool,  &settings.freezeEffects,        "1 = frozen CTs are tinted blue and get the health-shot screen effect."},
 			{"hns_no_guns",             SettingDef::Bool,  &settings.noGuns,               "1 = nobody can hold a gun or taser; any that a player gets is removed."},
-			{"hns_knife_ct_only",       SettingDef::Bool,  &settings.knifeCTOnly,          "1 = only CTs have a knife (Ts keep their grenades)."},
+			{"hns_knife_ct_only",       SettingDef::Bool,  &settings.knifeCTOnly,          "1 = everyone keeps a knife but only CTs can attack with it (Ts keep their grenades)."},
 			{"hns_knife_stab_only",     SettingDef::Bool,  &settings.knifeStabOnly,        "1 = knife slash (attack1) is disabled, only the right-click stab works."},
 			{"hns_knife_damage",        SettingDef::Float, &settings.knifeDamage,          "Damage of every CT knife hit on a T, backstabs included. 0 = game default."},
 			{"hns_team_switch",         SettingDef::Bool,  &settings.teamSwitch,           "1 = swap teams when the CTs win."},
