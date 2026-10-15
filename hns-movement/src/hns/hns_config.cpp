@@ -157,6 +157,7 @@ namespace hns::config
 		return true;
 	}
 
+	// withComments = the hns-movement.cfg form (config names, CS2KZ values). Otherwise plain cvar lines for the fallback cfg.
 	static_function std::string FormatCvarLines(bool withComments)
 	{
 		std::string out;
@@ -164,13 +165,14 @@ namespace hns::config
 		for (i32 i = 0; i < HNSCVAR_COUNT; i++)
 		{
 			const hns::cvars::Definition &def = hns::cvars::definitions[i];
+			const char *name = withComments ? def.ConfigName() : def.name;
 			if (def.type == hns::cvars::Type::Bool)
 			{
-				V_snprintf(line, sizeof(line), "%-34s %s", def.name, hns::cvars::GetBool((HNSMovementCvar)i) ? "true" : "false");
+				V_snprintf(line, sizeof(line), "%-34s %s", name, hns::cvars::GetBool((HNSMovementCvar)i) ? "true" : "false");
 			}
 			else
 			{
-				V_snprintf(line, sizeof(line), "%-34s %g", def.name, hns::cvars::GetFloat((HNSMovementCvar)i));
+				V_snprintf(line, sizeof(line), "%-34s %g", name, hns::cvars::GetFloat((HNSMovementCvar)i));
 			}
 			out += line;
 			if (withComments)
@@ -182,6 +184,11 @@ namespace hns::config
 				else
 				{
 					V_snprintf(line, sizeof(line), " // CS2KZ: %g", def.kzValue);
+				}
+				if (def.cfgName)
+				{
+					out += line;
+					V_snprintf(line, sizeof(line), " (sets %s)", def.name);
 				}
 				out += line;
 			}
@@ -220,7 +227,7 @@ namespace hns::config
 		// Built from the compiled-in defaults, so it always matches this build.
 		std::string out = "// hns-movement configuration. Edit, then run hns_reload (server console or rcon).\n"
 						  "// Movement cvars listed here are enforced every tick; changing them with the console or a map cfg has no lasting\n"
-						  "// effect. Everything else (game_type, mp_*, bot_*, sv_falldamage_scale, mp_solid_teammates) stays in your server cfg.\n\n"
+						  "// effect. Everything else (game_type, mp_*, bot_*, sv_falldamage_scale, mp_solid_enemies) stays in your server cfg.\n\n"
 						  "// ---- Plugin settings ----\n";
 		u32 count;
 		const SettingDef *defs = GetSettingDefs(count);

@@ -6,8 +6,11 @@
 // Values are written straight into the cvar data every tick, the way CS2KZ's KZ::mode::ApplyModeSettings does, so map
 // cfgs, mp_restartgame or an admin typo cannot change how movement feels. Edit hns-movement.cfg and run hns_reload instead.
 //
+// mp_solid_teammates is owned, set through hns_solid_teammates (default 0, same as CS2KZ). The surf/rampbug code
+// predicts TryPlayerMove without player collisions, which is only correct when teammates are not solid.
+//
 // Deliberately NOT owned here:
-//   mp_solid_teammates / mp_solid_enemies  (HNS wants player collision, CS2KZ forces these to 0)
+//   mp_solid_enemies                       (HNS wants Ts and CTs to collide)
 //   sv_falldamage_scale                    (ChaseMod toggles it during the CT freeze)
 //   game_type, game_mode, mp_*, bot_*, sv_alltalk (server policy, stays in the server cfg)
 enum HNSMovementCvar : int
@@ -43,6 +46,7 @@ enum HNSMovementCvar : int
 	HNSCVAR_SV_SUBTICK_MOVEMENT_VIEW_ANGLES,
 	HNSCVAR_SV_LEGACY_JUMP,
 	HNSCVAR_SV_BHOP_TIME_WINDOW,
+	HNSCVAR_MP_SOLID_TEAMMATES,
 	HNSCVAR_COUNT,
 };
 
@@ -52,6 +56,7 @@ namespace hns::cvars
 	{
 		Float,
 		Bool,
+		Int,
 	};
 
 	struct Definition
@@ -62,6 +67,13 @@ namespace hns::cvars
 		f32 defaultValue;
 		// CS2KZ Classic value, for reference in the generated cfg.
 		f32 kzValue;
+		// Name used in hns-movement.cfg when it differs from the cvar name.
+		const char *cfgName = nullptr;
+
+		constexpr const char *ConfigName() const
+		{
+			return cfgName ? cfgName : name;
+		}
 	};
 
 	// clang-format off
@@ -98,6 +110,8 @@ namespace hns::cvars
 		{"sv_legacy_jump",                  Type::Bool,  1.0f,     1.0f},
 		// Inert while sv_legacy_jump is on. Kept so the modern-jump perf check has the value if legacy jump is ever turned off.
 		{"sv_bhop_time_window",             Type::Float, 0.05f,    0.02f},
+		// 0 = teammates pass through each other, 1 = solid, 2 = solid but can't stand on each other's heads.
+		{"mp_solid_teammates",              Type::Int,   0.0f,     0.0f, "hns_solid_teammates"},
 	};
 	// clang-format on
 

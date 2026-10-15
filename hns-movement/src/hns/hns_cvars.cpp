@@ -21,6 +21,10 @@ namespace hns::cvars
 		{
 			dst.m_bValue = value != 0.0f;
 		}
+		else if (type == Type::Int)
+		{
+			dst.m_i32Value = (i32)value;
+		}
 		else
 		{
 			dst.m_fl32Value = value;
@@ -33,6 +37,10 @@ namespace hns::cvars
 		{
 			dst.m_bValue = src.m_bValue;
 		}
+		else if (type == Type::Int)
+		{
+			dst.m_i32Value = src.m_i32Value;
+		}
 		else
 		{
 			dst.m_fl32Value = src.m_fl32Value;
@@ -41,7 +49,15 @@ namespace hns::cvars
 
 	static_function bool ValuesEqual(Type type, const CVValue_t &a, const CVValue_t &b)
 	{
-		return type == Type::Bool ? (a.m_bValue == b.m_bValue) : (a.m_fl32Value == b.m_fl32Value);
+		if (type == Type::Bool)
+		{
+			return a.m_bValue == b.m_bValue;
+		}
+		if (type == Type::Int)
+		{
+			return a.m_i32Value == b.m_i32Value;
+		}
+		return a.m_fl32Value == b.m_fl32Value;
 	}
 
 	static_function void FormatValue(Type type, const CVValue_t &value, char *buffer, size_t size)
@@ -49,6 +65,10 @@ namespace hns::cvars
 		if (type == Type::Bool)
 		{
 			V_snprintf(buffer, size, "%s", value.m_bValue ? "true" : "false");
+		}
+		else if (type == Type::Int)
+		{
+			V_snprintf(buffer, size, "%d", value.m_i32Value);
 		}
 		else
 		{
@@ -65,6 +85,10 @@ namespace hns::cvars
 			if (def.type == Type::Bool)
 			{
 				refs[i] = new CConVarRef<bool>(def.name);
+			}
+			else if (def.type == Type::Int)
+			{
+				refs[i] = new CConVarRef<int>(def.name);
 			}
 			else
 			{
@@ -108,19 +132,27 @@ namespace hns::cvars
 
 	f32 GetFloat(HNSMovementCvar cvar)
 	{
-		return definitions[cvar].type == Type::Bool ? (enforced[cvar].m_bValue ? 1.0f : 0.0f) : enforced[cvar].m_fl32Value;
+		switch (definitions[cvar].type)
+		{
+			case Type::Bool:
+				return enforced[cvar].m_bValue ? 1.0f : 0.0f;
+			case Type::Int:
+				return (f32)enforced[cvar].m_i32Value;
+			default:
+				return enforced[cvar].m_fl32Value;
+		}
 	}
 
 	bool GetBool(HNSMovementCvar cvar)
 	{
-		return definitions[cvar].type == Type::Bool ? enforced[cvar].m_bValue : enforced[cvar].m_fl32Value != 0.0f;
+		return GetFloat(cvar) != 0.0f;
 	}
 
 	i32 FindByName(const char *name)
 	{
 		for (i32 i = 0; i < HNSCVAR_COUNT; i++)
 		{
-			if (KZ_STREQI(definitions[i].name, name))
+			if (KZ_STREQI(definitions[i].name, name) || KZ_STREQI(definitions[i].ConfigName(), name))
 			{
 				return i;
 			}
@@ -140,6 +172,10 @@ namespace hns::cvars
 		{
 			bool b = KZ_STREQI(value, "true") || (utils::IsNumeric(value) && atof(value) != 0.0);
 			SetValue(enforced[index], def.type, b ? 1.0f : 0.0f);
+		}
+		else if (def.type == Type::Int)
+		{
+			SetValue(enforced[index], def.type, (f32)atoi(value));
 		}
 		else
 		{

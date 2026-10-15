@@ -31,8 +31,8 @@ the TryPlayerMove path is still recorded so it can be added later).
 ## Install
 
 1. Metamod:Source 2.x must be installed. Copy the contents of `build/package/` into `game/csgo/`.
-2. Remove the `// Movement related` block from your server cfg (`CVARS.txt`), except `sv_falldamage_scale`, which ChaseMod
-   still owns. Add `exec hns-movement/hns_movement_fallback` in its place, so the values still apply if the plugin fails to load.
+2. Remove the `// Movement related` block and `mp_solid_teammates 2` from your server cfg (`CVARS.txt`), except
+   `sv_falldamage_scale`, which ChaseMod still owns. Add `exec hns-movement/hns_movement_fallback` in its place, so the values still apply if the plugin fails to load.
 3. Start the server and run `meta list` and `hns_status`.
 
 ## Configuration
@@ -51,9 +51,10 @@ the TryPlayerMove path is still recorded so it can be added later).
 | `hns_rampbug_min_distance` | 1.0 | Rampbug fix minimum gain (CS2KZ constant). |
 | `hns_warn_external_change` | 1 | Warn when something else changes an enforced cvar. |
 | `hns_debug_perf` | 0 | Print every takeoff (perf, ground time, speeds) to the console. |
+| `hns_solid_teammates` | 0 | Enforced into `mp_solid_teammates` (0 = pass through, 1 = solid, 2 = solid, no standing on heads). 0 matches CS2KZ; the rampbug fix assumes teammates don't collide. |
 
-Not owned by the plugin, on purpose: `mp_solid_teammates` / `mp_solid_enemies` (CS2KZ forces 0, HNS wants collisions),
-`sv_falldamage_scale` (ChaseMod), and all game mode, round and bot cvars.
+Not owned by the plugin, on purpose: `mp_solid_enemies` (Ts and CTs still collide), `sv_falldamage_scale` (ChaseMod),
+and all game mode, round and bot cvars.
 
 ### Commands (server console / rcon)
 
