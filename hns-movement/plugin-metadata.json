@@ -1,0 +1,11 @@
+{
+    "name": "hns-movement",
+    "alias": "hns-movement",
+    "display_name": "HNS Movement",
+    "description": "KZ-grade movement for CS2 Hide and Seek (fork of CS2KZ's movement layer)",
+    "author": "Nhn (based on CS2KZ by zer0.k and contributors)",
+    "url": "https://github.com/KZGlobalTeam/cs2kz-metamod",
+    "log_tag": "HNS",
+    "license": "AGPLv3",
+    "version": "0.1.0-dev"
+}

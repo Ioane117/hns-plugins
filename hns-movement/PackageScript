@@ -1,0 +1,51 @@
+# vim: set ts=2 sw=2 tw=99 noet ft=python:
+# Produces build/package/ laid out like the server's game/csgo folder:
+#   addons/metamod/hns-movement.vdf
+#   addons/hns-movement/bin/<platform>/hns-movement.(so|dll)
+#   addons/hns-movement/gamedata/hns-movement.games.txt
+#   cfg/hns-movement/hns-movement.cfg
+import os
+
+builder.SetBuildFolder('package')
+
+name = MMSPlugin.metadata['name']
+plugin_folder_path = os.path.join('addons', name)
+metamod_path = os.path.join('addons', 'metamod')
+gamedata_path = os.path.join(plugin_folder_path, 'gamedata')
+cfg_path = os.path.join('cfg', 'hns-movement')
+
+builder.AddFolder(plugin_folder_path)
+builder.AddFolder(metamod_path)
+gamedata_folder = builder.AddFolder(gamedata_path)
+cfg_folder = builder.AddFolder(cfg_path)
+
+cxx = MMSPlugin.sdk_target.cxx
+platform64_path_map = {
+  'windows': 'win64',
+  'linux': 'linuxsteamrt64',
+  'mac': 'osx64'
+}
+bin_path = os.path.join(plugin_folder_path, 'bin', platform64_path_map[cxx.target.platform])
+builder.AddFolder(bin_path)
+
+vdf_content = '"Metamod Plugin"\n{\n'
+vdf_content += f'\t"alias"\t"{MMSPlugin.metadata["alias"]}"\n'
+vdf_content += f'\t"file"\t"{os.path.join(os.path.relpath(bin_path, "."), name)}"\n'
+vdf_content += '}\n'
+builder.AddOutputFile(os.path.join(metamod_path, f'{name}.vdf'), vdf_content.encode('utf8'))
+
+builder.AddCopy(os.path.join(builder.sourcePath, 'gamedata', 'hns-movement.games.txt'), gamedata_folder)
+for filename in os.listdir(os.path.join(builder.sourcePath, 'cfg')):
+  builder.AddCopy(os.path.join(builder.sourcePath, 'cfg', filename), cfg_folder)
+
+pdb_list = []
+for task in MMSPlugin.binaries:
+  (_, bin_name) = os.path.split(task.binary.path)
+  ext = os.path.splitext(bin_name)[1]
+  builder.AddCopy(task.binary, os.path.join(bin_path, name + ext))
+  if task.debug:
+    pdb_list.append(task.debug)
+
+with open(os.path.join(builder.buildPath, 'pdblog.txt'), 'wt') as fp:
+  for line in pdb_list:
+    fp.write(line.path + '\n')

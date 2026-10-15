@@ -1,0 +1,50 @@
+#pragma once
+#include "common.h"
+
+// Loads csgo/cfg/hns-movement/hns-movement.cfg.
+//
+// The file holds two kinds of lines, both "<name> <value>", with // comments:
+//   - movement cvars from hns_cvars.h (sv_airaccelerate 1000 ...): enforced every tick.
+//   - plugin settings below (hns_ps_enabled 1 ...).
+// Anything not set in the file keeps its built-in default. Run hns_reload after editing.
+#define HNS_CONFIG_PATH   "cfg/hns-movement/hns-movement.cfg"
+#define HNS_FALLBACK_PATH "cfg/hns-movement/hns_movement_fallback.cfg"
+
+namespace hns::config
+{
+	// The game keeps the player this far away from what they collide with. Physical constant of the engine, not tunable.
+	inline constexpr f32 RAMP_BUG_OFFSET = 0.03125f;
+
+	struct Settings
+	{
+		// KZ prestrafe model. On (default) = identical to CS2KZ Classic: ground speed is capped at 250 + prestrafe (max 276),
+		// which overrides sv_maxspeed on the ground, and perf speed uses KZ's log formula.
+		// Off = no ground speed clamp (sv_maxspeed applies) and a perf keeps max(landing speed, takeoff speed).
+		bool psEnabled = true;
+
+		// Rampbug fix thresholds (CS2KZ Classic constants, tuned at sv_airaccelerate 100). Exposed for retuning at 1000.
+		f32 rampbugThreshold = 0.999f; // Normals with a dot product below this count as a different plane.
+		f32 rampbugSamePlane = 0.99f;  // Offset trace counts as the same ramp above this dot product.
+		f32 rampbugMinDistance = 1.0f; // Offset trace must go at least this much further to be accepted.
+
+		// Log when something outside the plugin changes an owned cvar.
+		bool warnOnExternalChange = true;
+
+		// Print every takeoff (perf or not, time on ground, speeds) to the server console. Development only.
+		bool debugPerf = false;
+	};
+
+	inline Settings settings;
+
+	// Read the cfg file. Missing file = defaults plus a warning. Returns false only on a read error.
+	bool Load();
+
+	// Write a plain cvar cfg with the currently enforced values, for "exec hns-movement/hns_movement_fallback" in
+	// server.cfg. If the plugin ever fails to load, the server still gets the same movement values.
+	bool WriteFallback();
+
+	// Write a commented default hns-movement.cfg if none exists yet.
+	bool WriteDefaultConfigIfMissing();
+
+	void PrintSettings();
+} // namespace hns::config

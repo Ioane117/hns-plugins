@@ -1,0 +1,7 @@
+[submodule "hns-movement/metamod-source"]
+	path = hns-movement/metamod-source
+	url = https://github.com/alliedmodders/metamod-source.git
+[submodule "hns-movement/hl2sdk-cs2"]
+	path = hns-movement/hl2sdk-cs2
+	url = https://github.com/alliedmodders/hl2sdk.git
+	branch = cs2

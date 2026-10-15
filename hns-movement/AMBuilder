@@ -1,0 +1,105 @@
+# vim: set sts=2 ts=8 sw=2 tw=99 et ft=python:
+# hns-movement build. Trimmed from CS2KZ's AMBuilder: one binary, no vendored network/DB/compression libraries.
+import os
+
+def get_proto_builder(builder, sdk_target, sdk):
+  protoc_builder = builder.tools.Protoc(protoc = sdk_target.protoc, sources = [
+    os.path.join(sdk['path'], 'common', 'valveextensions.proto'),
+    os.path.join(sdk['path'], 'common', 'netmessages.proto'),
+    os.path.join(sdk['path'], 'game', 'shared', 'usermessages.proto'),
+    os.path.join(sdk['path'], 'common', 'network_connection.proto'),
+    os.path.join(sdk['path'], 'common', 'networkbasetypes.proto'),
+    os.path.join(sdk['path'], 'common', 'engine_gcmessages.proto'),
+    os.path.join(sdk['path'], 'gcsdk', 'steammessages.proto'),
+    os.path.join(sdk['path'], 'gcsdk', 'gcsdk_gcmessages.proto'),
+    os.path.join(sdk['path'], 'game', 'shared', 'cstrike15', 'cstrike15_gcmessages.proto'),
+    os.path.join(sdk['path'], 'game', 'shared', 'cstrike15', 'cstrike15_usermessages.proto'),
+    os.path.join(sdk['path'], 'game', 'shared', 'usercmd.proto'),
+    os.path.join(sdk['path'], 'game', 'shared', 'gameevents.proto'),
+    os.path.join(sdk['path'], 'game', 'shared', 'cs', 'cs_gameevents.proto'),
+    os.path.join(sdk['path'], 'game', 'shared', 'cs', 'cs_usercmd.proto'),
+    os.path.join(sdk['path'], 'networksystem', 'networksystem_protomessages.proto'),
+  ])
+  protoc_builder.protoc.includes += [
+    os.path.join(sdk['path'], 'gcsdk'),
+  ]
+  return protoc_builder
+
+def configure_main(sdk_target, sdk, cxx, protoc_builder):
+  binary = MMSPlugin.HL2Library(builder, cxx, MMSPlugin.metadata['name'], sdk)
+
+  if binary.compiler.family == 'gcc' or binary.compiler.family == 'clang':
+    binary.compiler.defines += ['_GLIBCXX_USE_CXX11_ABI=0']
+
+  if binary.compiler.family == 'clang':
+    binary.compiler.cxxflags += ['-Wno-register', '-frtti', '-Wno-invalid-offsetof', '-Wno-parentheses']
+
+  binary.compiler.cxxincludes += [
+      os.path.join(builder.sourcePath, 'src'),
+      os.path.join(builder.sourcePath, 'hl2sdk-cs2'),
+      os.path.join(builder.sourcePath, 'hl2sdk-cs2', 'public', 'entity2'),
+      os.path.join(builder.sourcePath, 'hl2sdk-cs2', 'game', 'shared'),
+      os.path.join(builder.sourcePath, 'hl2sdk-cs2', 'game', 'server'),
+  ]
+
+  binary.custom = [protoc_builder]
+
+  binary.sources += [
+    os.path.join(sdk['path'], 'entity2', 'entityidentity.cpp'),
+    os.path.join(sdk['path'], 'entity2', 'entitysystem.cpp'),
+    os.path.join(sdk['path'], 'entity2', 'entitykeyvalues.cpp'),
+    os.path.join(sdk['path'], 'tier1', 'keyvalues3.cpp'),
+
+    os.path.join(builder.sourcePath, 'src', 'hns_plugin.cpp'),
+
+    os.path.join(builder.sourcePath, 'src', 'utils', 'utils.cpp'),
+    os.path.join(builder.sourcePath, 'src', 'utils', 'utils_interface.cpp'),
+    os.path.join(builder.sourcePath, 'src', 'utils', 'utils_print.cpp'),
+    os.path.join(builder.sourcePath, 'src', 'utils', 'gameconfig.cpp'),
+    os.path.join(builder.sourcePath, 'src', 'utils', 'hooks.cpp'),
+    os.path.join(builder.sourcePath, 'src', 'utils', 'schema.cpp'),
+    os.path.join(builder.sourcePath, 'src', 'utils', 'ctimer.cpp'),
+
+    os.path.join(builder.sourcePath, 'src', 'player', 'player_manager.cpp'),
+    os.path.join(builder.sourcePath, 'src', 'player', 'player.cpp'),
+
+    os.path.join(builder.sourcePath, 'src', 'movement', 'mv_manager.cpp'),
+    os.path.join(builder.sourcePath, 'src', 'movement', 'mv_player.cpp'),
+
+    os.path.join(builder.sourcePath, 'src', 'hns', 'hns_player.cpp'),
+    os.path.join(builder.sourcePath, 'src', 'hns', 'hns_movement.cpp'),
+    os.path.join(builder.sourcePath, 'src', 'hns', 'hns_cvars.cpp'),
+    os.path.join(builder.sourcePath, 'src', 'hns', 'hns_config.cpp'),
+    os.path.join(builder.sourcePath, 'src', 'hns', 'hns_commands.cpp'),
+  ]
+
+  if binary.compiler.target.platform == 'linux':
+    binary.compiler.postlink += [
+      os.path.join(sdk['path'], 'lib', 'linux64', 'mathlib.a'),
+    ]
+    binary.sources += [
+      'src/utils/plat_linux.cpp'
+    ]
+  elif binary.compiler.target.platform == 'windows':
+    binary.compiler.postlink += [
+      'psapi.lib',
+      os.path.join(sdk['path'], 'lib', 'public', 'win64', 'mathlib.lib'),
+      os.path.join(sdk['path'], 'lib', 'public', 'win64', 'steam_api64.lib'),
+    ]
+    binary.sources += [
+      'src/utils/plat_win.cpp'
+    ]
+
+  return binary
+
+sdk_target = MMSPlugin.sdk_target
+sdk = MMSPlugin.sdk_target.sdk
+cxx = MMSPlugin.sdk_target.cxx
+
+protoc_builder = get_proto_builder(builder, sdk_target, sdk)
+binary = configure_main(sdk_target, sdk, cxx, protoc_builder)
+
+nodes = builder.Add(binary)
+MMSPlugin.binaries += [nodes]
+
+# vim: filetype=python expandtab shiftwidth=2 tabstop=8 textwidth=99
