@@ -1,6 +1,7 @@
 #include "hns_gameplay.h"
 #include "hns_player.h"
 #include "hns_config.h"
+#include "hns_weapons.h"
 #include "utils/utils.h"
 #include "sdk/gamerules.h"
 #include "sdk/services.h"
@@ -28,6 +29,7 @@ namespace hns::gameplay
 	static_global i32 terroristWinStreak {};
 
 	bool IsFrozen(HNSPlayer *player);
+	void ApplyServerSettings();
 
 	static_function f32 Now()
 	{
@@ -186,8 +188,19 @@ namespace hns::gameplay
 				}
 			}
 		}
+		else if (KZ_STREQI(name, "player_spawn"))
+		{
+			// userid is the controller's entity index - 1 (player slot) for player_spawn in CS2.
+			CEntityInstance *controller = event->GetPlayerController("userid");
+			if (controller)
+			{
+				hns::weapons::OnPlayerSpawn(controller->m_pEntity->m_EHandle.GetEntryIndex() - 1);
+			}
+		}
 		else if (KZ_STREQI(name, "round_prestart"))
 		{
+			// Again every round: game mode cfgs executed after map start can turn mp_autokick back on.
+			ApplyServerSettings();
 			EndCTFreeze();
 			if (shouldSwitchTeams)
 			{
@@ -202,8 +215,17 @@ namespace hns::gameplay
 		}
 	}
 
+	void ApplyServerSettings()
+	{
+		if (settings.disableAutokick)
+		{
+			interfaces::pEngine->ServerCommand("mp_autokick 0");
+		}
+	}
+
 	void OnMapStart()
 	{
+		ApplyServerSettings();
 		freezeEndTime = 0.0f;
 		RestoreFallDamage();
 		for (bool &v : frozenVisual)

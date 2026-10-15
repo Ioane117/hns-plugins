@@ -21,4 +21,6 @@ namespace hns::gameplay
 	void ApplyFreezeToWeapons(HNSPlayer *player);
 
 	void OnMapStart();
+	// Server cvars the plugin sets once (map start, load, hns_reload) rather than enforcing every tick.
+	void ApplyServerSettings();
 } // namespace hns::gameplay

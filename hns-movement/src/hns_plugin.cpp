@@ -58,6 +58,7 @@ bool HNSPlugin::Load(PluginId id, ISmmAPI *ismm, char *error, size_t maxlen, boo
 	hns::cvars::DisableReplication();
 	hns::cvars::ApplyAll();
 	hns::commands::Init();
+	hns::gameplay::ApplyServerSettings();
 
 	if (late)
 	{

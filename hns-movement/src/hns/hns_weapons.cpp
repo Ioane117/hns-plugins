@@ -4,6 +4,7 @@
 #include "utils/utils.h"
 #include "utils/gameconfig.h"
 #include "utils/interfaces.h"
+#include "utils/virtual.h"
 #include "sdk/services.h"
 #include "sdk/takedamageinfo.h"
 #include "sdk/entity/cbaseplayerweapon.h"
@@ -21,6 +22,9 @@ namespace hns::weapons
 	static_global u32 damageOverrides {};
 	// Last tick a "use weapon_knife" was sent to each slot, so an empty-handed player is not spammed.
 	static_global i32 lastEquipTick[MAXPLAYERS + 1] {};
+	// Tick at which a spawned player's grenades should be checked. 0 = nothing pending.
+	static_global i32 pendingSpawnItems[MAXPLAYERS + 1] {};
+	static_global i32 giveNamedItemOffset = -1;
 
 	enum class WeaponKind
 	{
@@ -84,6 +88,7 @@ namespace hns::weapons
 			HNS_LOG_WARN(LogChannel::General,
 						 "CBasePlayerPawn_RemovePlayerItem/RemoveEntity did not resolve: disallowed weapons are disabled instead of removed.\n");
 		}
+		giveNamedItemOffset = g_pGameConfig->GetOffset("CCSPlayer_ItemServices_GiveNamedItem");
 		HNS_LOG_INFO(LogChannel::General, "Weapon rules: RemovePlayerItem %s, RemoveEntity %s.\n", RemovePlayerItem ? "ok" : "MISSING",
 					 g_pKZUtils->RemoveEntity ? "ok" : "MISSING");
 	}
@@ -181,8 +186,66 @@ namespace hns::weapons
 		}
 	}
 
+	void OnPlayerSpawn(i32 slot)
+	{
+		if (slot >= 0 && slot <= MAXPLAYERS)
+		{
+			// 4 ticks: the game hands out the default loadout right after the spawn event.
+			pendingSpawnItems[slot] = g_pKZUtils->GetServerGlobals()->tickcount + 4;
+		}
+	}
+
+	static_function void GiveSpawnItems(HNSPlayer *player)
+	{
+		CCSPlayerController *controller = player->GetController();
+		CCSPlayerPawn *pawn = player->GetPlayerPawn();
+		if (!settings.tSpawnGrenades || !controller || !pawn || controller->m_iTeamNum() != CS_TEAM_T || !pawn->m_pItemServices()
+			|| !pawn->m_pWeaponServices() || giveNamedItemOffset < 0)
+		{
+			return;
+		}
+		bool hasSmoke = false;
+		bool hasFlash = false;
+		CUtlVector<CHandle<CBasePlayerWeapon>> *weapons = pawn->m_pWeaponServices()->m_hMyWeapons();
+		FOR_EACH_VEC(*weapons, i)
+		{
+			CBasePlayerWeapon *weapon = (*weapons)[i].Get();
+			if (!weapon)
+			{
+				continue;
+			}
+			i32 def = weapon->m_AttributeManager().m_Item().m_iItemDefinitionIndex();
+			hasSmoke |= def == 45;
+			hasFlash |= def == 43;
+		}
+		if (!hasSmoke)
+		{
+			CALL_VIRTUAL(CBasePlayerWeapon *, giveNamedItemOffset, pawn->m_pItemServices(), "weapon_smokegrenade");
+		}
+		if (!hasFlash)
+		{
+			CALL_VIRTUAL(CBasePlayerWeapon *, giveNamedItemOffset, pawn->m_pItemServices(), "weapon_flashbang");
+		}
+	}
+
 	void OnGameFrame()
 	{
+		{
+			i32 now = g_pKZUtils->GetServerGlobals()->tickcount;
+			for (i32 i = 0; i < MAXPLAYERS; i++)
+			{
+				if (pendingSpawnItems[i] == 0 || now < pendingSpawnItems[i])
+				{
+					continue;
+				}
+				pendingSpawnItems[i] = 0;
+				HNSPlayer *player = g_pHNSPlayerManager->ToPlayer(CPlayerSlot(i));
+				if (player && player->IsConnectedController() && player->IsAlive())
+				{
+					GiveSpawnItems(player);
+				}
+			}
+		}
 		if (!settings.noGuns && !settings.knifeCTOnly && !settings.knifeStabOnly && !settings.equipKnife)
 		{
 			return;

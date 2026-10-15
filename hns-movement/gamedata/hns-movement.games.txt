@@ -350,6 +350,12 @@
 		}
 		"Offsets"
 		{
+			// From CounterStrikeSharp gamedata (v1.0.376): spawn grenades for Ts.
+			"CCSPlayer_ItemServices_GiveNamedItem"
+			{
+				"windows"		"23"
+				"linux"			"24"
+			}
 			"QuietPlayerSlot"
 			{
 				"windows"		"576"

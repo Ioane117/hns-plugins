@@ -19,6 +19,8 @@ namespace hns::weapons
 	void PrintDebug();
 	// Once per server frame, before players are simulated.
 	void OnGameFrame();
+	// player_spawn: queue the T spawn grenades (given a few ticks later, after the game's own loadout).
+	void OnPlayerSpawn(i32 slot);
 	// TakeDamageOld pre-hook. Returns true to block the damage entirely.
 	bool OnTakeDamage(CBaseEntity *victim, CTakeDamageInfo *info);
 } // namespace hns::weapons

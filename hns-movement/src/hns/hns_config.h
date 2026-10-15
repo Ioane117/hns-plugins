@@ -40,6 +40,10 @@ namespace hns::config
 		bool knifeStabOnly = true;
 		// Switch to the knife when a player has nothing in hand (spawn, or their held gun was removed).
 		bool equipKnife = true;
+		// Ts get one smoke grenade and one flashbang when they spawn (topped up, never doubled).
+		bool tSpawnGrenades = true;
+		// mp_autokick 0 on map start: no kicks for suiciding too often (falls), team kills or team damage.
+		bool disableAutokick = true;
 		// Damage of every CT knife hit on a T. 0 = game default (slash 40, stab 65, backstab 180).
 		f32 knifeDamage = 55.0f;
 		// Swap CTs and Ts when the CTs win.

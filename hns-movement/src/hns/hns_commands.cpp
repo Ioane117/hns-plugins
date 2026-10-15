@@ -3,6 +3,7 @@
 #include "hns_cvars.h"
 #include "hns_player.h"
 #include "hns_weapons.h"
+#include "hns_gameplay.h"
 #include "utils/utils.h"
 
 #include "tier0/memdbgon.h"
@@ -26,6 +27,7 @@ CON_COMMAND_F(hns_reload, "Reload cfg/hns-movement/hns-movement.cfg and push the
 	hns::config::Load();
 	hns::cvars::ApplyAll();
 	hns::cvars::SendToAllClients();
+	hns::gameplay::ApplyServerSettings();
 	HNS_LOG_INFO(LogChannel::General, "Reloaded. Run hns_write_fallback if you also want the fallback cfg updated.\n");
 }
 
