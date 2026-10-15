@@ -92,7 +92,7 @@ namespace hns::cvars
 		{"sv_jump_spam_penalty_time",       Type::Float, 0.0f,     0.0f},
 		{"sv_ladder_angle",                 Type::Float, -0.707f,  -0.707f},
 		{"sv_ladder_dampen",                Type::Float, 1.0f,     1.0f},
-		{"sv_ladder_scale_speed",           Type::Float, 2.0f,     1.0f},
+		{"sv_ladder_scale_speed",           Type::Float, 1.0f,     1.0f},
 		{"sv_maxspeed",                     Type::Float, 380.0f,   320.0f},
 		{"sv_maxvelocity",                  Type::Float, 3500.0f,  3500.0f},
 		{"sv_staminajumpcost",              Type::Float, 0.0f,     0.0f},
