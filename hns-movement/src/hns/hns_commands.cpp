@@ -2,6 +2,7 @@
 #include "hns_config.h"
 #include "hns_cvars.h"
 #include "hns_player.h"
+#include "hns_weapons.h"
 #include "utils/utils.h"
 
 #include "tier0/memdbgon.h"
@@ -38,6 +39,7 @@ CON_COMMAND_F(hns_status, "Print the enforced movement cvars and the plugin sett
 	hns::cvars::PrintTable();
 	META_CONPRINTF("---- hns-movement settings ----\n");
 	hns::config::PrintSettings();
+	hns::weapons::PrintDebug();
 }
 
 CON_COMMAND_F(hns_write_fallback, "Write cfg/hns-movement/hns_movement_fallback.cfg with the enforced values.", FCVAR_NONE)
@@ -60,7 +62,7 @@ CON_COMMAND_F(hns_perf_stats, "Print per-player jump/perf counts since connect."
 	for (i32 i = 0; i < MAXPLAYERS; i++)
 	{
 		HNSPlayer *player = g_pHNSPlayerManager->ToPlayer(CPlayerSlot(i));
-		if (!player || !player->IsInGame())
+		if (!player || !player->IsConnectedController())
 		{
 			continue;
 		}

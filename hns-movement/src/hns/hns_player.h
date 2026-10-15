@@ -20,6 +20,14 @@ public:
 
 	HNSMovementService *movement {};
 
+	// Connected and in the server, judged from the controller entity. Used instead of Player::IsInGame, which reads the
+	// engine's client list through a gamedata offset (ClientOffset) that is not reliable on every game build.
+	bool IsConnectedController()
+	{
+		CCSPlayerController *controller = this->GetController();
+		return controller && controller->m_iConnected() == PlayerConnectedState::PlayerConnected;
+	}
+
 	// Per-player stats, readable by hns_perf_stats.
 	struct Stats
 	{

@@ -15,6 +15,9 @@ namespace hns::weapons
 {
 	typedef void RemovePlayerItem_t(CBasePlayerPawn *pawn, CBasePlayerWeapon *weapon);
 	static_global RemovePlayerItem_t *RemovePlayerItem {};
+	static_global bool damageHooked {};
+	static_global u32 removedCount {};
+	static_global u32 damageOverrides {};
 
 	enum class WeaponKind
 	{
@@ -65,6 +68,11 @@ namespace hns::weapons
 		return Classify(weapon->m_AttributeManager().m_Item().m_iItemDefinitionIndex());
 	}
 
+	void SetDamageHooked(bool hooked)
+	{
+		damageHooked = hooked;
+	}
+
 	void Init()
 	{
 		RemovePlayerItem = (RemovePlayerItem_t *)g_pGameConfig->ResolveSignature("CBasePlayerPawn_RemovePlayerItem");
@@ -73,6 +81,8 @@ namespace hns::weapons
 			HNS_LOG_WARN(LogChannel::General,
 						 "CBasePlayerPawn_RemovePlayerItem/RemoveEntity did not resolve: disallowed weapons are disabled instead of removed.\n");
 		}
+		HNS_LOG_INFO(LogChannel::General, "Weapon rules: RemovePlayerItem %s, RemoveEntity %s.\n", RemovePlayerItem ? "ok" : "MISSING",
+					 g_pKZUtils->RemoveEntity ? "ok" : "MISSING");
 	}
 
 	static_function bool ShouldRemove(WeaponKind kind, i32 team)
@@ -134,6 +144,7 @@ namespace hns::weapons
 		{
 			RemovePlayerItem(pawn, toRemove[i]);
 			g_pKZUtils->RemoveEntity(toRemove[i]);
+			removedCount++;
 		}
 	}
 
@@ -147,7 +158,7 @@ namespace hns::weapons
 		for (i32 i = 0; i < MAXPLAYERS; i++)
 		{
 			HNSPlayer *player = g_pHNSPlayerManager->ToPlayer(CPlayerSlot(i));
-			if (!player || !player->IsInGame() || !player->IsAlive())
+			if (!player || !player->IsConnectedController() || !player->IsAlive())
 			{
 				continue;
 			}
@@ -184,6 +195,58 @@ namespace hns::weapons
 			return false;
 		}
 		info->m_flDamage() = settings.knifeDamage;
+		damageOverrides++;
 		return false;
+	}
+	static_function const char *KindName(WeaponKind kind)
+	{
+		switch (kind)
+		{
+			case WeaponKind::Knife:
+				return "knife";
+			case WeaponKind::Grenade:
+				return "grenade";
+			case WeaponKind::Gun:
+				return "gun";
+			default:
+				return "other";
+		}
+	}
+
+	void PrintDebug()
+	{
+		META_CONPRINTF("---- hns-movement weapon rules ----\n");
+		META_CONPRINTF("no_guns %d, knife_ct_only %d, knife_stab_only %d, knife_damage %g\n", settings.noGuns, settings.knifeCTOnly,
+					   settings.knifeStabOnly, settings.knifeDamage);
+		META_CONPRINTF("RemovePlayerItem %s, RemoveEntity %s, damage hook %s\n", RemovePlayerItem ? "ok" : "MISSING",
+					   g_pKZUtils->RemoveEntity ? "ok" : "MISSING", damageHooked ? "ok" : "MISSING");
+		META_CONPRINTF("weapons removed so far %u, knife damage overrides so far %u\n", removedCount, damageOverrides);
+		for (i32 i = 0; i < MAXPLAYERS; i++)
+		{
+			HNSPlayer *player = g_pHNSPlayerManager->ToPlayer(CPlayerSlot(i));
+			if (!player || !player->IsConnectedController())
+			{
+				continue;
+			}
+			CCSPlayerController *controller = player->GetController();
+			CCSPlayerPawn *pawn = player->GetPlayerPawn();
+			META_CONPRINTF("[%d] team %d connected %d engine-ingame %d alive %d pawn %p\n", i, controller ? controller->m_iTeamNum() : -1,
+						   player->IsConnectedController(), player->IsInGame(), player->IsAlive(), pawn);
+			if (!pawn || !pawn->m_pWeaponServices())
+			{
+				continue;
+			}
+			CUtlVector<CHandle<CBasePlayerWeapon>> *weapons = pawn->m_pWeaponServices()->m_hMyWeapons();
+			FOR_EACH_VEC(*weapons, w)
+			{
+				CBasePlayerWeapon *weapon = (*weapons)[w].Get();
+				if (!weapon)
+				{
+					continue;
+				}
+				i32 def = weapon->m_AttributeManager().m_Item().m_iItemDefinitionIndex();
+				META_CONPRINTF("    %s def %d -> %s\n", weapon->GetClassname(), def, KindName(Classify(def)));
+			}
+		}
 	}
 } // namespace hns::weapons

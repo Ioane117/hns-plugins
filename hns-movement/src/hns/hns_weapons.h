@@ -14,6 +14,9 @@ namespace hns::weapons
 {
 	// Resolves the optional signatures. Missing ones only disable the matching rule.
 	void Init();
+	void SetDamageHooked(bool hooked);
+	// hns_status: rule state, signature state and every player's weapons.
+	void PrintDebug();
 	// Once per server frame, before players are simulated.
 	void OnGameFrame();
 	// TakeDamageOld pre-hook. Returns true to block the damage entirely.

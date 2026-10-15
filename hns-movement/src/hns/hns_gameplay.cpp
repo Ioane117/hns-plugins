@@ -94,7 +94,7 @@ namespace hns::gameplay
 		for (i32 i = 0; i < MAXPLAYERS; i++)
 		{
 			HNSPlayer *player = g_pHNSPlayerManager->ToPlayer(CPlayerSlot(i));
-			if (!player || !player->IsInGame())
+			if (!player || !player->IsConnectedController())
 			{
 				frozenVisual[i] = false;
 				continue;
@@ -133,7 +133,7 @@ namespace hns::gameplay
 		for (i32 i = 0; i < MAXPLAYERS; i++)
 		{
 			HNSPlayer *player = g_pHNSPlayerManager->ToPlayer(CPlayerSlot(i));
-			if (!player || !player->IsInGame())
+			if (!player || !player->IsConnectedController())
 			{
 				continue;
 			}

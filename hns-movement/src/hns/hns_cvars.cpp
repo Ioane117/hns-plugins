@@ -262,7 +262,7 @@ namespace hns::cvars
 		for (i32 i = 0; i < MAXPLAYERS; i++)
 		{
 			HNSPlayer *player = g_pHNSPlayerManager->ToPlayer(CPlayerSlot(i));
-			if (player && player->IsInGame() && !player->IsFakeClient())
+			if (player && player->IsConnectedController() && !player->IsFakeClient())
 			{
 				SendToClient(player->GetPlayerSlot());
 			}
