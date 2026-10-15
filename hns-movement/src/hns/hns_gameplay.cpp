@@ -221,6 +221,10 @@ namespace hns::gameplay
 		{
 			interfaces::pEngine->ServerCommand("mp_autokick 0");
 		}
+		if (settings.disableTeamIntro)
+		{
+			interfaces::pEngine->ServerCommand("mp_team_intro_time 0");
+		}
 	}
 
 	void OnMapStart()
