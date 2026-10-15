@@ -18,6 +18,8 @@
 #include "hns/hns_player.h"
 #include "hns/hns_movement.h"
 #include "hns/hns_gameplay.h"
+#include "hns/hns_weapons.h"
+#include "sdk/takedamageinfo.h"
 #include "sdk/usercmd.h"
 
 #include "vprof.h"
@@ -70,6 +72,7 @@ static KHook::Return<void> GameFramePre(ISource2Server *pThis, bool simulating, 
 	VPROF_BUDGET(__func__, "HNS");
 	g_HNSPlugin.serverGlobals = *(g_pKZUtils->GetGlobals());
 	hns::gameplay::OnGameFrame();
+	hns::weapons::OnGameFrame();
 	return {KHook::Action::Ignore};
 }
 
@@ -686,6 +689,18 @@ static KHook::Return<void> PostThinkPost(CCSPlayerPawnBase *pawn)
 
 static KHook::Member<CCSPlayerPawnBase, void> PostThink(PostThinkPre, PostThinkPost);
 
+// ============================================================
+// Damage hook (optional, knife damage override)
+// ============================================================
+
+static KHook::Return<void> TakeDamageOldPre(CBaseEntity *victim, CTakeDamageInfo *info, void *result)
+{
+	hns::weapons::OnTakeDamage(victim, info);
+	return {KHook::Action::Ignore};
+}
+
+static KHook::Member<CBaseEntity, void, CTakeDamageInfo *, void *> TakeDamageOld(TakeDamageOldPre, nullptr);
+
 struct SignatureHook
 {
 	const char *name;
@@ -785,6 +800,17 @@ bool hooks::Initialize(char *error, size_t maxlen)
 	{
 		SIGNATURE_HOOKS[i].configure(signatureAddresses[i]);
 	}
+
+	// Optional: a missing signature only disables the knife damage override.
+	if (void *address = g_pGameConfig->ResolveSignature("CBaseEntity_TakeDamageOld"))
+	{
+		TakeDamageOld.Configure(address);
+	}
+	else
+	{
+		HNS_LOG_WARN(LogChannel::General, "CBaseEntity_TakeDamageOld did not resolve: hns_knife_damage has no effect.\n");
+	}
+	hns::weapons::Init();
 
 	// Late load: hook the pawns that already exist.
 	if (GameEntitySystem())

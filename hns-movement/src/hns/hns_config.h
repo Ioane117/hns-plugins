@@ -33,6 +33,13 @@ namespace hns::config
 		bool freezeNoFallDamage = true;
 		// Blue tint and health-shot screen effect on frozen CTs (same as ChaseMod).
 		bool freezeEffects = true;
+
+		// ---- Weapons (hns_weapons.cpp) ----
+		bool noGuns = true;
+		bool knifeCTOnly = true;
+		bool knifeStabOnly = true;
+		// Damage of every CT knife hit on a T. 0 = game default (slash 40, stab 65, backstab 180).
+		f32 knifeDamage = 55.0f;
 		// Swap CTs and Ts when the CTs win.
 		bool teamSwitch = true;
 		// Also swap after this many T wins in a row. 0 = never.
