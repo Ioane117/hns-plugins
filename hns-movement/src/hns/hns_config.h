@@ -38,6 +38,8 @@ namespace hns::config
 		bool noGuns = true;
 		bool knifeCTOnly = true;
 		bool knifeStabOnly = true;
+		// CTs with the knife out: left click (+attack) is turned into a stab (+attack2).
+		bool knifeAttackIsStab = true;
 		// Switch to the knife when a player has nothing in hand (spawn, or their held gun was removed).
 		bool equipKnife = true;
 		// Ts get one smoke grenade and one flashbang when they spawn (topped up, never doubled).

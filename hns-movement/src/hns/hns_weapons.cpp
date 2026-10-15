@@ -8,6 +8,7 @@
 #include "utils/virtual.h"
 #include "sdk/services.h"
 #include "sdk/takedamageinfo.h"
+#include "sdk/usercmd.h"
 #include "sdk/entity/cbaseplayerweapon.h"
 
 #include "tier0/memdbgon.h"
@@ -183,6 +184,63 @@ namespace hns::weapons
 			{
 				lastEquipTick[slot] = tick;
 				interfaces::pEngine->ClientCommand(player->GetPlayerSlot(), "use weapon_knife");
+			}
+		}
+	}
+
+	static_function u64 AttackToStab(u64 buttons)
+	{
+		if (buttons & IN_ATTACK)
+		{
+			buttons = (buttons & ~(u64)IN_ATTACK) | (u64)IN_ATTACK2;
+		}
+		return buttons;
+	}
+
+	void RemapKnifeAttack(HNSPlayer *player, PlayerCommand *cmds, int numcmds)
+	{
+		if (!settings.knifeAttackIsStab || !cmds || numcmds <= 0)
+		{
+			return;
+		}
+		CCSPlayerController *controller = player->GetController();
+		CCSPlayerPawn *pawn = player->GetPlayerPawn();
+		if (!controller || controller->m_iTeamNum() != CS_TEAM_CT || !pawn || !pawn->m_pWeaponServices())
+		{
+			return;
+		}
+		CBasePlayerWeapon *active = pawn->m_pWeaponServices()->m_hActiveWeapon().Get();
+		if (!active || Classify(active) != WeaponKind::Knife)
+		{
+			return;
+		}
+		for (i32 i = 0; i < numcmds; i++)
+		{
+			PlayerCommand &cmd = cmds[i];
+			CBaseUserCmdPB *base = cmd.mutable_base();
+			if (base->has_buttons_pb())
+			{
+				CInButtonStatePB *pb = base->mutable_buttons_pb();
+				pb->set_buttonstate1(AttackToStab(pb->buttonstate1()));
+				pb->set_buttonstate2(AttackToStab(pb->buttonstate2()));
+				pb->set_buttonstate3(AttackToStab(pb->buttonstate3()));
+			}
+			for (i32 k = 0; k < 3; k++)
+			{
+				cmd.buttonstates.m_pButtonStates[k] = AttackToStab(cmd.buttonstates.m_pButtonStates[k]);
+			}
+			for (i32 j = 0; j < base->subtick_moves_size(); j++)
+			{
+				CSubtickMoveStep *move = base->mutable_subtick_moves(j);
+				if (move->button() == IN_ATTACK)
+				{
+					move->set_button(IN_ATTACK2);
+				}
+			}
+			if (cmd.attack1_start_history_index() >= 0)
+			{
+				cmd.set_attack2_start_history_index(cmd.attack1_start_history_index());
+				cmd.set_attack1_start_history_index(-1);
 			}
 		}
 	}

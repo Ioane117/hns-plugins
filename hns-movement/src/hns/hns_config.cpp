@@ -35,6 +35,7 @@ namespace hns::config
 			{"hns_no_guns",             SettingDef::Bool,  &settings.noGuns,               "1 = nobody can hold a gun or taser; any that a player gets is removed."},
 			{"hns_knife_ct_only",       SettingDef::Bool,  &settings.knifeCTOnly,          "1 = everyone keeps a knife but only CTs can attack with it (Ts keep their grenades)."},
 			{"hns_knife_stab_only",     SettingDef::Bool,  &settings.knifeStabOnly,        "1 = knife slash (attack1) is disabled, only the right-click stab works."},
+			{"hns_knife_attack_is_stab",SettingDef::Bool,  &settings.knifeAttackIsStab,    "1 = for CTs holding the knife, left click (+attack) stabs like right click (+attack2)."},
 			{"hns_equip_knife",         SettingDef::Bool,  &settings.equipKnife,           "1 = switch to the knife when a player spawns or is left holding nothing."},
 			{"hns_disable_autokick",    SettingDef::Bool,  &settings.disableAutokick,      "1 = run mp_autokick 0 on every map start (no kicks for suiciding, team kills or team damage)."},
 			{"hns_disable_team_intro",  SettingDef::Bool,  &settings.disableTeamIntro,     "1 = run mp_team_intro_time 0 (no frozen team intro after warmup)."},

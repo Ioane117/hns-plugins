@@ -3,6 +3,7 @@
 #include "hns_cvars.h"
 #include "hns_config.h"
 #include "hns_gameplay.h"
+#include "hns_weapons.h"
 #include "utils/utils.h"
 
 #include "vprof.h"
@@ -77,6 +78,11 @@ void HNSPlayer::OnSetupMove(PlayerCommand *pc)
 {
 	VPROF_BUDGET(__func__, "HNS");
 	this->movement->OnSetupMove(pc);
+}
+
+void HNSPlayer::OnProcessUsercmds(PlayerCommand *cmds, int numcmds)
+{
+	hns::weapons::RemapKnifeAttack(this, cmds, numcmds);
 }
 
 void HNSPlayer::OnProcessMovement()

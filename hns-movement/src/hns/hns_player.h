@@ -44,6 +44,7 @@ public:
 	virtual void OnPhysicsSimulate() override;
 	virtual void OnPhysicsSimulatePost() override;
 	virtual void OnSetupMove(PlayerCommand *pc) override;
+	virtual void OnProcessUsercmds(PlayerCommand *cmds, int numcmds) override;
 	virtual void OnProcessMovement() override;
 	virtual void OnProcessMovementPost() override;
 	virtual void OnPlayerMove() override;
