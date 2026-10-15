@@ -76,7 +76,8 @@ public:
 			return;
 		}
 
-		if (iTeam <= CS_TEAM_SPECTATOR)
+		// HNS: the SwitchTeam signature is optional; fall back to ChangeTeam instead of calling a null pointer.
+		if (iTeam <= CS_TEAM_SPECTATOR || !g_pKZUtils->SwitchTeam)
 		{
 			ChangeTeam(iTeam);
 		}
