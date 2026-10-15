@@ -4,9 +4,8 @@
 class HNSPlayer;
 class IGameEvent;
 
-// HNS round flow, native replacement for the ChaseMod features this server needs (ChaseMod needs CounterStrikeSharp,
-// which is not installed here):
-//   - CT start freeze: for hns_ct_freeze_time seconds after the round starts, CTs cannot move, jump or attack.
+// HNS round flow, native replacement for ChaseMod's round-start freeze and team switch (no CounterStrikeSharp needed).
+//   - CT start freeze: for hns_ct_freeze_time seconds after the round starts, CTs cannot move, jump or attack; they are tinted blue and fall damage is off (hns_freeze_*).
 //     Ts move freely. The engine freezetime (mp_freezetime) is forced to 0 by the cvar table so it never freezes Ts.
 //   - Team switch: CTs and Ts swap on a CT win, and on a T win streak of hns_t_winstreak_switch (0 = never).
 namespace hns::gameplay

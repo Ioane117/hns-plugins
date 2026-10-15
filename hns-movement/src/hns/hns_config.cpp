@@ -30,6 +30,8 @@ namespace hns::config
 			{"hns_ps_enabled",          SettingDef::Bool,  &settings.psEnabled,            "1 = CS2KZ prestrafe + 250 ground clamp + KZ perf formula. 0 = sv_maxspeed on ground, perf keeps max(landing, takeoff) speed."},
 			{"hns_perf_requires_jump",  SettingDef::Bool,  &settings.perfRequiresJump,     "1 = perf speed rewrite only on real jumps (keeps surf speed when skimming/leaving ground). 0 = CS2KZ behaviour."},
 			{"hns_ct_freeze_time",      SettingDef::Float, &settings.ctFreezeTime,         "Seconds CTs are frozen at round start; Ts can move and jump. 0 = off."},
+			{"hns_freeze_no_falldamage",SettingDef::Bool,  &settings.freezeNoFallDamage,   "1 = sv_falldamage_scale is 0 while CTs are frozen, restored afterwards."},
+			{"hns_freeze_effects",      SettingDef::Bool,  &settings.freezeEffects,        "1 = frozen CTs are tinted blue and get the health-shot screen effect."},
 			{"hns_team_switch",         SettingDef::Bool,  &settings.teamSwitch,           "1 = swap teams when the CTs win."},
 			{"hns_t_winstreak_switch",  SettingDef::Int,   &settings.tWinStreakSwitch,     "Also swap teams after this many T wins in a row. 0 = never."},
 			{"hns_rampbug_threshold",   SettingDef::Float, &settings.rampbugThreshold,     "Rampbug fix: dot product below which two normals are different planes (CS2KZ: 0.999)."},

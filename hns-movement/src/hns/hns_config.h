@@ -29,6 +29,10 @@ namespace hns::config
 		// ---- HNS round flow (replaces ChaseMod's freeze and team switch) ----
 		// Seconds CTs stay frozen at round start (Ts move freely). 0 = off.
 		f32 ctFreezeTime = 15.0f;
+		// Fall damage off for everyone while the CTs are frozen (same as ChaseMod).
+		bool freezeNoFallDamage = true;
+		// Blue tint and health-shot screen effect on frozen CTs (same as ChaseMod).
+		bool freezeEffects = true;
 		// Swap CTs and Ts when the CTs win.
 		bool teamSwitch = true;
 		// Also swap after this many T wins in a row. 0 = never.

@@ -15,6 +15,8 @@ public:
 	DECLARE_SCHEMA_CLASS_ENTITY(CCSPlayerPawn);
 	SCHEMA_FIELD(float, m_ignoreLadderJumpTime)
 	SCHEMA_FIELD(float, m_flVelocityModifier)
+	// GameTime_t (a float) in the schema.
+	SCHEMA_FIELD(float, m_flHealthShotBoostExpirationTime)
 
 	SCHEMA_FIELD(QAngle, m_angEyeAngles)
 	SCHEMA_FIELD(bool, m_bLeftHanded)

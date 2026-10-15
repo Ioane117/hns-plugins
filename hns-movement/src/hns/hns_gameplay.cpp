@@ -6,6 +6,8 @@
 #include "sdk/services.h"
 #include "sdk/entity/cbaseplayerweapon.h"
 #include "igameevents.h"
+#include "utils/interfaces.h"
+#include "convar.h"
 
 #include "tier0/memdbgon.h"
 
@@ -17,8 +19,15 @@ namespace hns::gameplay
 	static_global f32 freezeEndTime {};
 	static_global i32 lastCountdownShown = -1;
 
+	// sv_falldamage_scale before the freeze turned it off. < 0 = not overridden.
+	static_global f32 savedFallDamageScale = -1.0f;
+	// Which slots currently show the frozen tint/effect.
+	static_global bool frozenVisual[MAXPLAYERS + 1] {};
+
 	static_global bool shouldSwitchTeams {};
 	static_global i32 terroristWinStreak {};
+
+	bool IsFrozen(HNSPlayer *player);
 
 	static_function f32 Now()
 	{
@@ -31,6 +40,81 @@ namespace hns::gameplay
 		return rules && rules->m_bWarmupPeriod();
 	}
 
+	static_function void DisableFallDamage()
+	{
+		if (!settings.freezeNoFallDamage || savedFallDamageScale >= 0.0f)
+		{
+			return;
+		}
+		CConVarRef<float> scale("sv_falldamage_scale");
+		if (!scale.IsValidRef() || !scale.IsConVarDataAvailable())
+		{
+			return;
+		}
+		savedFallDamageScale = scale.Get();
+		// Through the console, like ChaseMod, so the value replicates to clients.
+		interfaces::pEngine->ServerCommand("sv_falldamage_scale 0");
+	}
+
+	static_function void RestoreFallDamage()
+	{
+		if (savedFallDamageScale < 0.0f)
+		{
+			return;
+		}
+		char cmd[64];
+		V_snprintf(cmd, sizeof(cmd), "sv_falldamage_scale %g", savedFallDamageScale);
+		interfaces::pEngine->ServerCommand(cmd);
+		savedFallDamageScale = -1.0f;
+	}
+
+	static_function void SetFrozenVisual(HNSPlayer *player, bool frozen)
+	{
+		CCSPlayerPawn *pawn = player->GetPlayerPawn();
+		if (!pawn)
+		{
+			return;
+		}
+		Color color = pawn->m_clrRender();
+		if (frozen)
+		{
+			pawn->m_clrRender(Color(4, 58, 140, color.a()));
+			pawn->m_flHealthShotBoostExpirationTime(freezeEndTime);
+		}
+		else
+		{
+			pawn->m_clrRender(Color(255, 255, 255, color.a()));
+			pawn->m_flHealthShotBoostExpirationTime(Now());
+		}
+	}
+
+	// Brings each player's tint/effect in line with IsFrozen. Cheap: only touches players whose state changed.
+	static_function void UpdateFrozenVisuals()
+	{
+		for (i32 i = 0; i < MAXPLAYERS; i++)
+		{
+			HNSPlayer *player = g_pHNSPlayerManager->ToPlayer(CPlayerSlot(i));
+			if (!player || !player->IsInGame())
+			{
+				frozenVisual[i] = false;
+				continue;
+			}
+			bool want = settings.freezeEffects && IsFrozen(player);
+			if (want != frozenVisual[i])
+			{
+				frozenVisual[i] = want;
+				SetFrozenVisual(player, want);
+			}
+		}
+	}
+
+	static_function void EndCTFreeze()
+	{
+		freezeEndTime = 0.0f;
+		RestoreFallDamage();
+		UpdateFrozenVisuals();
+	}
+
 	static_function void StartCTFreeze()
 	{
 		if (settings.ctFreezeTime <= 0.0f || IsWarmup())
@@ -40,6 +124,8 @@ namespace hns::gameplay
 		}
 		freezeEndTime = Now() + settings.ctFreezeTime;
 		lastCountdownShown = -1;
+		DisableFallDamage();
+		UpdateFrozenVisuals();
 	}
 
 	static_function void SwitchTeams()
@@ -102,7 +188,7 @@ namespace hns::gameplay
 		}
 		else if (KZ_STREQI(name, "round_prestart"))
 		{
-			freezeEndTime = 0.0f;
+			EndCTFreeze();
 			if (shouldSwitchTeams)
 			{
 				shouldSwitchTeams = false;
@@ -119,6 +205,11 @@ namespace hns::gameplay
 	void OnMapStart()
 	{
 		freezeEndTime = 0.0f;
+		RestoreFallDamage();
+		for (bool &v : frozenVisual)
+		{
+			v = false;
+		}
 		shouldSwitchTeams = false;
 		terroristWinStreak = 0;
 	}
@@ -132,10 +223,12 @@ namespace hns::gameplay
 		f32 left = freezeEndTime - Now();
 		if (left <= 0.0f)
 		{
-			freezeEndTime = 0.0f;
-			utils::PrintCentreAll("Round start!");
+			EndCTFreeze();
+			utils::PrintCentreAll("Seekers released!");
 			return;
 		}
+		// Covers players who spawn or switch team mid-freeze.
+		UpdateFrozenVisuals();
 		i32 shown = (i32)ceilf(left);
 		if (shown != lastCountdownShown)
 		{
