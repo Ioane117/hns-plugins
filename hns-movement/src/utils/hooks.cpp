@@ -741,6 +741,42 @@ static_global const SignatureHook SIGNATURE_HOOKS[] = {
 
 #undef SIGNATURE_HOOK
 
+// KHook reads a virtual's vtable index from the compiler's vcall thunk. On Windows it only recognises MSVC's thunk
+// (jmp [rax+disp]); clang-cl emits "mov rax,[rcx]; mov rax,[rax+disp]; jmp rax", which KHook reports as -1 and the hook is
+// silently never installed. Decode both forms here and configure the hooks by index.
+template<typename FUNC>
+static_function std::int32_t VtableIndex(FUNC function)
+{
+	std::int32_t index = KHook::GetVtableIndex(function);
+#ifdef _WIN32
+	if (index == -1)
+	{
+		const u8 *p = reinterpret_cast<const u8 *>(KHook::ExtractMFP(function));
+		if (p[0] == 0xE9) // jmp rel32 (incremental linking stub)
+		{
+			p = p + *reinterpret_cast<const i32 *>(p + 1) + 5;
+		}
+		if (p[0] == 0x48 && p[1] == 0x8B && p[2] == 0x01) // mov rax, [rcx]
+		{
+			p += 3;
+			if (p[0] == 0x48 && p[1] == 0x8B && p[2] == 0x40 && p[4] == 0x48 && p[5] == 0xFF && p[6] == 0xE0) // mov rax,[rax+disp8]; jmp rax
+			{
+				index = *reinterpret_cast<const i8 *>(p + 3) / (i32)sizeof(void *);
+			}
+			else if (p[0] == 0x48 && p[1] == 0x8B && p[2] == 0x80 && p[7] == 0x48 && p[8] == 0xFF && p[9] == 0xE0) // disp32
+			{
+				index = *reinterpret_cast<const i32 *>(p + 3) / (i32)sizeof(void *);
+			}
+		}
+	}
+#endif
+	if (index == -1)
+	{
+		HNS_LOG_WARN(LogChannel::General, "Could not determine a vtable index; a hook will not be installed.\n");
+	}
+	return index;
+}
+
 // ============================================================
 // hooks::Initialize
 // ============================================================
@@ -777,21 +813,21 @@ bool hooks::Initialize(char *error, size_t maxlen)
 	teleportHook.Configure(g_pGameConfig->GetOffset("Teleport"));
 
 	// Interface hooks
-	gameFrameHook.Configure(&ISource2Server::GameFrame);
+	gameFrameHook.Configure(VtableIndex(&ISource2Server::GameFrame));
 	gameFrameHook.Add(interfaces::pServer);
 
-	clientActiveHook.Configure(&ISource2GameClients::ClientActive);
+	clientActiveHook.Configure(VtableIndex(&ISource2GameClients::ClientActive));
 	clientActiveHook.Add(g_pSource2GameClients);
 
-	clientDisconnectHook.Configure(&ISource2GameClients::ClientDisconnect);
+	clientDisconnectHook.Configure(VtableIndex(&ISource2GameClients::ClientDisconnect));
 	clientDisconnectHook.Add(g_pSource2GameClients);
 
-	fireEventHook.Configure(&IGameEventManager2::FireEvent);
+	fireEventHook.Configure(VtableIndex(&IGameEventManager2::FireEvent));
 	fireEventHook.Add(interfaces::pGameEventManager);
 
 	{
 		void *vtable = modules::server->FindVirtualTable("CEntityDebugGameSystem");
-		serverGamePostSimulateHook.Configure(&IGameSystem::OnServerGamePostSimulate);
+		serverGamePostSimulateHook.Configure(VtableIndex(&IGameSystem::OnServerGamePostSimulate));
 		serverGamePostSimulateHook.AddGlobal((IGameSystem *)&vtable);
 	}
 
@@ -805,6 +841,7 @@ bool hooks::Initialize(char *error, size_t maxlen)
 	if (void *address = g_pGameConfig->ResolveSignature("CBaseEntity_TakeDamageOld"))
 	{
 		TakeDamageOld.Configure(address);
+		hns::weapons::SetDamageHooked(true);
 	}
 	else
 	{
