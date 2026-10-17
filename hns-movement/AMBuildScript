@@ -430,7 +430,8 @@ const char *PLUGIN_REVISION_COUNT = \"{revision_count}\";
 
     # Apply -flto only to shared (non-static) binaries.
     # Static archives trigger linker issues when pulled into other binaries that also use LTO.
-    if not static and builder.options.opt == '1' and cxx.behavior == 'gcc':
+    # Not on Linux: LTO mangles the .symver pins in src/compat/glibc_shim.c.
+    if not static and builder.options.opt == '1' and cxx.behavior == 'gcc' and cxx.target.platform != 'linux':
       cxx.cflags += ['-flto']
       cxx.linkflags += ['-flto']
 

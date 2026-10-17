@@ -82,7 +82,9 @@ def configure_main(sdk_target, sdk, cxx, protoc_builder):
       os.path.join(sdk['path'], 'lib', 'linux64', 'mathlib.a'),
     ]
     binary.sources += [
-      'src/utils/plat_linux.cpp'
+      'src/utils/plat_linux.cpp',
+      'src/compat/glibc_shim.c',
+      'src/compat/libstdcxx_shim.cpp',
     ]
   elif binary.compiler.target.platform == 'windows':
     binary.compiler.postlink += [
