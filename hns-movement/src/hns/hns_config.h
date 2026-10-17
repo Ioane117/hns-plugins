@@ -54,6 +54,8 @@ namespace hns::config
 		bool silentTeamChange = true;
 		// Damage of every CT knife hit on a T. 0 = game default (slash 40, stab 65, backstab 180).
 		f32 knifeDamage = 55.0f;
+		// Seconds a stabbed T takes no further knife damage (red tint meanwhile). 0 = no cooldown.
+		f32 knifeCooldown = 2.0f;
 		// Swap CTs and Ts when the CTs win.
 		bool teamSwitch = false; // ChaseMod owns the team switch (see hns_compat.h)
 		// Also swap after this many T wins in a row. 0 = never.

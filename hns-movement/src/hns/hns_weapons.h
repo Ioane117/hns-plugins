@@ -26,4 +26,6 @@ namespace hns::weapons
 	void OnPlayerSpawn(i32 slot);
 	// TakeDamageOld pre-hook. Returns true to block the damage entirely.
 	bool OnTakeDamage(CBaseEntity *victim, CTakeDamageInfo *info);
+	// Round start: nobody starts a round knife-immune.
+	void ResetStabCooldowns();
 } // namespace hns::weapons

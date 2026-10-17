@@ -22,6 +22,12 @@ namespace hns::weapons
 	static_global bool damageHooked {};
 	static_global u32 removedCount {};
 	static_global u32 damageOverrides {};
+	static_global u32 blockedStabs {};
+	// Knife cooldown: a stabbed T takes no knife damage until this server time.
+	static_global f32 stabImmuneUntil[MAXPLAYERS + 1] {};
+	static_global bool stabTinted[MAXPLAYERS + 1] {};
+	static_global Color stabOriginalColor[MAXPLAYERS + 1];
+	static_function void UpdateStabTints();
 	// Last tick a "use weapon_knife" was sent to each slot, so an empty-handed player is not spammed.
 	static_global i32 lastEquipTick[MAXPLAYERS + 1] {};
 	// Tick at which a spawned player's grenades should be checked. 0 = nothing pending.
@@ -303,6 +309,7 @@ namespace hns::weapons
 
 	void OnGameFrame()
 	{
+		UpdateStabTints();
 		{
 			i32 now = g_pKZUtils->GetServerGlobals()->tickcount;
 			for (i32 i = 0; i < MAXPLAYERS; i++)
@@ -337,7 +344,7 @@ namespace hns::weapons
 
 	bool OnTakeDamage(CBaseEntity *victim, CTakeDamageInfo *info)
 	{
-		if (settings.knifeDamage <= 0.0f || !victim || !info)
+		if ((settings.knifeDamage <= 0.0f && settings.knifeCooldown <= 0.0f) || !victim || !info)
 		{
 			return false;
 		}
@@ -363,10 +370,67 @@ namespace hns::weapons
 		{
 			return false;
 		}
-		info->m_flDamage() = settings.knifeDamage;
-		damageOverrides++;
+		CBasePlayerController *victimController = utils::GetController(victim);
+		i32 slot = victimController ? victimController->m_pEntity->m_EHandle.GetEntryIndex() - 1 : -1;
+		f32 now = g_pKZUtils->GetServerGlobals()->curtime;
+		if (settings.knifeCooldown > 0.0f && slot >= 0 && slot <= MAXPLAYERS)
+		{
+			if (now < stabImmuneUntil[slot])
+			{
+				// Still inside the window from the last stab: no damage at all.
+				blockedStabs++;
+				return true;
+			}
+			stabImmuneUntil[slot] = now + settings.knifeCooldown;
+		}
+		if (settings.knifeDamage > 0.0f)
+		{
+			info->m_flDamage() = settings.knifeDamage;
+			damageOverrides++;
+		}
+		// Red tint while immune, if the stab does not kill (same as ChaseMod).
+		if (settings.knifeCooldown > 0.0f && slot >= 0 && slot <= MAXPLAYERS && victim->m_iHealth() - info->m_flDamage() > 0.0f)
+		{
+			CBaseModelEntity *model = static_cast<CBaseModelEntity *>(victim);
+			if (!stabTinted[slot])
+			{
+				stabOriginalColor[slot] = model->m_clrRender();
+			}
+			stabTinted[slot] = true;
+			model->m_clrRender(Color(192, 0, 0, 160));
+		}
 		return false;
 	}
+
+	// Restore the tint once a stabbed player's immunity runs out.
+	static_function void UpdateStabTints()
+	{
+		f32 now = g_pKZUtils->GetServerGlobals()->curtime;
+		for (i32 i = 0; i < MAXPLAYERS; i++)
+		{
+			if (!stabTinted[i] || now < stabImmuneUntil[i])
+			{
+				continue;
+			}
+			stabTinted[i] = false;
+			HNSPlayer *player = g_pHNSPlayerManager->ToPlayer(CPlayerSlot(i));
+			CCSPlayerPawn *pawn = player ? player->GetPlayerPawn() : nullptr;
+			if (pawn)
+			{
+				pawn->m_clrRender(stabOriginalColor[i]);
+			}
+		}
+	}
+
+	void ResetStabCooldowns()
+	{
+		for (i32 i = 0; i <= MAXPLAYERS; i++)
+		{
+			stabImmuneUntil[i] = 0.0f;
+			stabTinted[i] = false;
+		}
+	}
+
 	static_function const char *KindName(WeaponKind kind)
 	{
 		switch (kind)
@@ -389,7 +453,7 @@ namespace hns::weapons
 					   settings.knifeStabOnly, settings.knifeDamage);
 		META_CONPRINTF("RemovePlayerItem %s, RemoveEntity %s, damage hook %s\n", RemovePlayerItem ? "ok" : "MISSING",
 					   g_pKZUtils->RemoveEntity ? "ok" : "MISSING", damageHooked ? "ok" : "MISSING");
-		META_CONPRINTF("weapons removed so far %u, knife damage overrides so far %u\n", removedCount, damageOverrides);
+		META_CONPRINTF("weapons removed so far %u, knife damage overrides so far %u, stabs blocked by cooldown %u\n", removedCount, damageOverrides, blockedStabs);
 		for (i32 i = 0; i < MAXPLAYERS; i++)
 		{
 			HNSPlayer *player = g_pHNSPlayerManager->ToPlayer(CPlayerSlot(i));

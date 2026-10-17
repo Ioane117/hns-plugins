@@ -695,7 +695,10 @@ static KHook::Member<CCSPlayerPawnBase, void> PostThink(PostThinkPre, PostThinkP
 
 static KHook::Return<void> TakeDamageOldPre(CBaseEntity *victim, CTakeDamageInfo *info, void *result)
 {
-	hns::weapons::OnTakeDamage(victim, info);
+	if (hns::weapons::OnTakeDamage(victim, info))
+	{
+		return {KHook::Action::Supersede};
+	}
 	return {KHook::Action::Ignore};
 }
 

@@ -209,6 +209,7 @@ namespace hns::gameplay
 		{
 			// Again every round: game mode cfgs executed after map start can turn mp_autokick back on.
 			ApplyServerSettings();
+			hns::weapons::ResetStabCooldowns();
 			EndCTFreeze();
 			if (shouldSwitchTeams)
 			{
