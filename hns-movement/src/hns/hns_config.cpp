@@ -40,6 +40,7 @@ namespace hns::config
 			{"hns_disable_autokick",    SettingDef::Bool,  &settings.disableAutokick,      "1 = run mp_autokick 0 on every map start (no kicks for suiciding, team kills or team damage)."},
 			{"hns_disable_team_intro",  SettingDef::Bool,  &settings.disableTeamIntro,     "1 = run mp_team_intro_time 0 (no frozen team intro after warmup)."},
 			{"hns_silent_team_change",  SettingDef::Bool,  &settings.silentTeamChange,     "1 = hide the \"<player> is joining the Terrorists\" chat line on team changes."},
+			{"hns_ct_spawn_decoy",      SettingDef::Bool,  &settings.ctSpawnDecoy,         "1 = CTs get a decoy when they spawn."},
 			{"hns_t_spawn_grenades",    SettingDef::Bool,  &settings.tSpawnGrenades,       "1 = Ts get a smoke grenade and a flashbang when they spawn."},
 			{"hns_knife_damage",        SettingDef::Float, &settings.knifeDamage,          "Damage of every CT knife hit on a T, backstabs included. 0 = game default."},
 			{"hns_team_switch",         SettingDef::Bool,  &settings.teamSwitch,           "1 = swap teams when the CTs win. Keep 0 when ChaseMod handles the team switch."},

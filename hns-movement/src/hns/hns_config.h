@@ -44,6 +44,8 @@ namespace hns::config
 		bool equipKnife = true;
 		// Ts get one smoke grenade and one flashbang when they spawn (topped up, never doubled).
 		bool tSpawnGrenades = true;
+		// CTs get a decoy when they spawn (topped up, never doubled).
+		bool ctSpawnDecoy = true;
 		// mp_autokick 0 on map start: no kicks for suiciding too often (falls), team kills or team damage.
 		bool disableAutokick = true;
 		// mp_team_intro_time 0: no frozen team intro when warmup ends (the CT freeze would only start after it).

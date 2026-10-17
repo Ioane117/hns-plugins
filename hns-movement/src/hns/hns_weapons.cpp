@@ -258,13 +258,20 @@ namespace hns::weapons
 	{
 		CCSPlayerController *controller = player->GetController();
 		CCSPlayerPawn *pawn = player->GetPlayerPawn();
-		if (!settings.tSpawnGrenades || !controller || !pawn || controller->m_iTeamNum() != CS_TEAM_T || !pawn->m_pItemServices()
-			|| !pawn->m_pWeaponServices() || giveNamedItemOffset < 0)
+		if (!controller || !pawn || !pawn->m_pItemServices() || !pawn->m_pWeaponServices() || giveNamedItemOffset < 0)
+		{
+			return;
+		}
+		i32 team = controller->m_iTeamNum();
+		bool wantTGrenades = settings.tSpawnGrenades && team == CS_TEAM_T;
+		bool wantCTDecoy = settings.ctSpawnDecoy && team == CS_TEAM_CT;
+		if (!wantTGrenades && !wantCTDecoy)
 		{
 			return;
 		}
 		bool hasSmoke = false;
 		bool hasFlash = false;
+		bool hasDecoy = false;
 		CUtlVector<CHandle<CBasePlayerWeapon>> *weapons = pawn->m_pWeaponServices()->m_hMyWeapons();
 		FOR_EACH_VEC(*weapons, i)
 		{
@@ -276,14 +283,21 @@ namespace hns::weapons
 			i32 def = weapon->m_AttributeManager().m_Item().m_iItemDefinitionIndex();
 			hasSmoke |= def == 45;
 			hasFlash |= def == 43;
+			hasDecoy |= def == 47;
 		}
-		if (!hasSmoke)
+		CCSPlayer_ItemServices *items = pawn->m_pItemServices();
+		if (wantTGrenades && !hasSmoke)
 		{
-			CALL_VIRTUAL(CBasePlayerWeapon *, giveNamedItemOffset, pawn->m_pItemServices(), "weapon_smokegrenade");
+			CALL_VIRTUAL(CBasePlayerWeapon *, giveNamedItemOffset, items, "weapon_smokegrenade");
 		}
-		if (!hasFlash)
+		if (wantTGrenades && !hasFlash)
 		{
-			CALL_VIRTUAL(CBasePlayerWeapon *, giveNamedItemOffset, pawn->m_pItemServices(), "weapon_flashbang");
+			CALL_VIRTUAL(CBasePlayerWeapon *, giveNamedItemOffset, items, "weapon_flashbang");
+		}
+		if (wantCTDecoy && !hasDecoy)
+		{
+			// Something to hold besides the knife, so a CT whose pistol was removed is never left empty-handed.
+			CALL_VIRTUAL(CBasePlayerWeapon *, giveNamedItemOffset, items, "weapon_decoy");
 		}
 	}
 
