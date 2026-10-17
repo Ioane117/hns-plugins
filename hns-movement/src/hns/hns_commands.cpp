@@ -4,6 +4,7 @@
 #include "hns_player.h"
 #include "hns_weapons.h"
 #include "hns_gameplay.h"
+#include "hns_compat.h"
 #include "utils/utils.h"
 
 #include "tier0/memdbgon.h"
@@ -28,6 +29,7 @@ CON_COMMAND_F(hns_reload, "Reload cfg/hns-movement/hns-movement.cfg and push the
 	hns::cvars::ApplyAll();
 	hns::cvars::SendToAllClients();
 	hns::gameplay::ApplyServerSettings();
+	hns::compat::Check();
 	HNS_LOG_INFO(LogChannel::General, "Reloaded. Run hns_write_fallback if you also want the fallback cfg updated.\n");
 }
 
@@ -42,6 +44,7 @@ CON_COMMAND_F(hns_status, "Print the enforced movement cvars and the plugin sett
 	META_CONPRINTF("---- hns-movement settings ----\n");
 	hns::config::PrintSettings();
 	hns::weapons::PrintDebug();
+	hns::compat::PrintStatus();
 }
 
 CON_COMMAND_F(hns_write_fallback, "Write cfg/hns-movement/hns_movement_fallback.cfg with the enforced values.", FCVAR_NONE)

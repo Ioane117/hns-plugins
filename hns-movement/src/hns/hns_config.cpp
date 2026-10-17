@@ -42,7 +42,7 @@ namespace hns::config
 			{"hns_silent_team_change",  SettingDef::Bool,  &settings.silentTeamChange,     "1 = hide the \"<player> is joining the Terrorists\" chat line on team changes."},
 			{"hns_t_spawn_grenades",    SettingDef::Bool,  &settings.tSpawnGrenades,       "1 = Ts get a smoke grenade and a flashbang when they spawn."},
 			{"hns_knife_damage",        SettingDef::Float, &settings.knifeDamage,          "Damage of every CT knife hit on a T, backstabs included. 0 = game default."},
-			{"hns_team_switch",         SettingDef::Bool,  &settings.teamSwitch,           "1 = swap teams when the CTs win."},
+			{"hns_team_switch",         SettingDef::Bool,  &settings.teamSwitch,           "1 = swap teams when the CTs win. Keep 0 when ChaseMod handles the team switch."},
 			{"hns_t_winstreak_switch",  SettingDef::Int,   &settings.tWinStreakSwitch,     "Also swap teams after this many T wins in a row. 0 = never."},
 			{"hns_rampbug_threshold",   SettingDef::Float, &settings.rampbugThreshold,     "Rampbug fix: dot product below which two normals are different planes (CS2KZ: 0.999)."},
 			{"hns_rampbug_same_plane",  SettingDef::Float, &settings.rampbugSamePlane,     "Rampbug fix: offset trace hitting a plane above this dot product counts as the same ramp (CS2KZ: 0.99)."},

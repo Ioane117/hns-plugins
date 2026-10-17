@@ -15,6 +15,7 @@
 #include "hns/hns_config.h"
 #include "hns/hns_commands.h"
 #include "hns/hns_gameplay.h"
+#include "hns/hns_compat.h"
 
 #include "tier0/memdbgon.h"
 
@@ -59,6 +60,7 @@ bool HNSPlugin::Load(PluginId id, ISmmAPI *ismm, char *error, size_t maxlen, boo
 	hns::cvars::ApplyAll();
 	hns::commands::Init();
 	hns::gameplay::ApplyServerSettings();
+	hns::compat::Check();
 
 	if (late)
 	{

@@ -53,9 +53,9 @@ namespace hns::config
 		// Damage of every CT knife hit on a T. 0 = game default (slash 40, stab 65, backstab 180).
 		f32 knifeDamage = 55.0f;
 		// Swap CTs and Ts when the CTs win.
-		bool teamSwitch = true;
+		bool teamSwitch = false; // ChaseMod owns the team switch (see hns_compat.h)
 		// Also swap after this many T wins in a row. 0 = never.
-		i32 tWinStreakSwitch = 5;
+		i32 tWinStreakSwitch = 0;
 
 		// Rampbug fix thresholds (CS2KZ Classic constants, tuned at sv_airaccelerate 100). Exposed for retuning at 1000.
 		f32 rampbugThreshold = 0.999f; // Normals with a dot product below this count as a different plane.

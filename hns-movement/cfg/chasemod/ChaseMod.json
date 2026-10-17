@@ -1,0 +1,23 @@
+{
+  "ConfigVersion": 4,
+  "enableKnifeHook": false,
+  "knifeDamageModify": false,
+  "knifeDamage": 55,
+  "knifeCooldown": 0,
+  "stunThrowTime": 2,
+  "stunFreezeTime": 5,
+  "stunFreezeRadius": 500,
+  "stunSameTeam": false,
+  "enableTeamSwitchingConditions": true,
+  "maxTerroristWinStreak": 5,
+  "enableKnifeDisabling": false,
+  "alwaysDisableTerroristKnife": false,
+  "ctStartFreezeTime": 0,
+  "enableFreezeTimeCountDownSound": false,
+  "freezeTimeCountDownSoundPath": "sounds/player/playerping",
+  "freezeRingParticle": {
+    "enabled": false,
+    "vpcfFile": "particles/example/freezering.vpcf",
+    "lifetime": 0.35
+  }
+}

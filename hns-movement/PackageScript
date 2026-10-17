@@ -36,7 +36,13 @@ builder.AddOutputFile(os.path.join(metamod_path, f'{name}.vdf'), vdf_content.enc
 
 builder.AddCopy(os.path.join(builder.sourcePath, 'gamedata', 'hns-movement.games.txt'), gamedata_folder)
 for filename in os.listdir(os.path.join(builder.sourcePath, 'cfg')):
-  builder.AddCopy(os.path.join(builder.sourcePath, 'cfg', filename), cfg_folder)
+  if os.path.isfile(os.path.join(builder.sourcePath, 'cfg', filename)):
+    builder.AddCopy(os.path.join(builder.sourcePath, 'cfg', filename), cfg_folder)
+
+# Recommended ChaseMod config for running both plugins. Shipped as a reference next to the plugin rather than into
+# CounterStrikeSharp's config folder, so extracting the package never overwrites a server's own ChaseMod.json.
+chasemod_folder = builder.AddFolder(os.path.join(plugin_folder_path, 'chasemod'))
+builder.AddCopy(os.path.join(builder.sourcePath, 'cfg', 'chasemod', 'ChaseMod.json'), chasemod_folder)
 
 pdb_list = []
 for task in MMSPlugin.binaries:
