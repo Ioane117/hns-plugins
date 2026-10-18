@@ -85,15 +85,8 @@ void hns::commands::Init()
 	// per-tick CSV logger (plan section 7, testing) will be added here.
 }
 
-// Players type this in their own console to turn their speed/key HUD off or back on. Lasts until they disconnect.
-CON_COMMAND_F(hns_hud, "Turn your speed and key HUD on or off.", FCVAR_CLIENT_CAN_EXECUTE)
+static_function void ToggleHud(CPlayerSlot slot)
 {
-	CPlayerSlot slot = context.GetPlayerSlot();
-	if (slot.Get() < 0)
-	{
-		META_CONPRINTF("hns_hud is a player command. To turn the HUD off for everyone, set hns_speed_hud 0 in the cfg.\n");
-		return;
-	}
 	HNSPlayer *player = g_pHNSPlayerManager->ToPlayer(slot);
 	if (!player || !player->GetController())
 	{
@@ -103,3 +96,69 @@ CON_COMMAND_F(hns_hud, "Turn your speed and key HUD on or off.", FCVAR_CLIENT_CA
 	utils::PrintConsole(player->GetController(), "Speed HUD %s.", on ? "on" : "off");
 	utils::PrintChat(player->GetController(), " Speed HUD %s.", on ? "on" : "off");
 }
+
+// Players type this in their own console (or !hud / /hud in chat) to turn their speed/key HUD off or back on.
+// Lasts until they disconnect.
+CON_COMMAND_F(hns_hud, "Turn your speed and key HUD on or off.", FCVAR_CLIENT_CAN_EXECUTE)
+{
+	CPlayerSlot slot = context.GetPlayerSlot();
+	if (slot.Get() < 0)
+	{
+		META_CONPRINTF("hns_hud is a player command. To turn the HUD off for everyone, set hns_speed_hud 0 in the cfg.\n");
+		return;
+	}
+	ToggleHud(slot);
+}
+
+namespace hns::commands
+{
+	struct ChatCommand
+	{
+		const char *name;
+		void (*run)(CPlayerSlot slot);
+	};
+
+	static const ChatCommand chatCommands[] = {
+		{"hud", ToggleHud},
+	};
+
+	bool OnSay(const CCommandContext &context, const CCommand &args)
+	{
+		CPlayerSlot slot = context.GetPlayerSlot();
+		if (slot.Get() < 0 || args.ArgC() < 2)
+		{
+			return false;
+		}
+		if (V_stricmp(args.Arg(0), "say") != 0 && V_stricmp(args.Arg(0), "say_team") != 0)
+		{
+			return false;
+		}
+		const char *text = args.Arg(1);
+		while (*text == ' ')
+		{
+			text++;
+		}
+		char prefix = text[0];
+		if (prefix != '!' && prefix != '/')
+		{
+			return false;
+		}
+		// The command word: everything after the prefix up to the first space.
+		char word[32];
+		i32 len = 0;
+		for (const char *c = text + 1; *c && *c != ' ' && len < (i32)sizeof(word) - 1; c++)
+		{
+			word[len++] = *c;
+		}
+		word[len] = '\0';
+		for (const ChatCommand &command : chatCommands)
+		{
+			if (V_stricmp(word, command.name) == 0)
+			{
+				command.run(slot);
+				return prefix == '/';
+			}
+		}
+		return false;
+	}
+} // namespace hns::commands
