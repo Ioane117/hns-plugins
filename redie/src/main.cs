@@ -32,7 +32,7 @@ public class Plugin : BasePlugin, IPluginConfig<Config>
         HookEntityOutput("*", "*", Disrupting, HookMode.Pre);
 
         VirtualFunctions.CCSPlayer_ItemServices_CanAcquireFunc.Hook(CanAcquireFunc, HookMode.Pre);
-        VirtualFunctions.CBaseEntity_TakeDamageOldFunc.Hook(TakeDamageOldFunc, HookMode.Pre);
+        RegisterListener<Listeners.OnPlayerTakeDamagePre>(OnPlayerTakeDamagePre);
     }
 
     public override void Unload(bool hotReload)
@@ -51,7 +51,7 @@ public class Plugin : BasePlugin, IPluginConfig<Config>
         UnhookEntityOutput("*", "*", Disrupting, HookMode.Pre);
 
         VirtualFunctions.CCSPlayer_ItemServices_CanAcquireFunc.Unhook(CanAcquireFunc, HookMode.Pre);
-        VirtualFunctions.CBaseEntity_TakeDamageOldFunc.Unhook(TakeDamageOldFunc, HookMode.Pre);
+        RemoveListener<Listeners.OnPlayerTakeDamagePre>(OnPlayerTakeDamagePre);
     }
 
     public Config Config { get; set; } = new Config();
@@ -233,12 +233,11 @@ public class Plugin : BasePlugin, IPluginConfig<Config>
         return HookResult.Continue;
     }
 
-    HookResult TakeDamageOldFunc(DynamicHook hook)
+    // CounterStrikeSharp 1.0.376 replaced the TakeDamageOld hook with this listener.
+    // Returning Handled blocks the damage.
+    HookResult OnPlayerTakeDamagePre(CCSPlayerPawn pawn, CTakeDamageInfo info)
     {
-        var pawn = hook.GetParam<CCSPlayerPawn>(0);
-        var info = hook.GetParam<CTakeDamageInfo>(1);
-
-        if (pawn == null || info == null)
+        if (pawn == null || !pawn.IsValid || info == null)
             return HookResult.Continue;
 
         var player = pawn.OriginalController?.Value?.As<CCSPlayerController>();
@@ -251,7 +250,6 @@ public class Plugin : BasePlugin, IPluginConfig<Config>
 
             if ((pawn.DesignerName == "player" && info.Attacker.Value?.DesignerName == "player") || info.BitsDamageType == DamageTypes_t.DMG_FALL)
             {
-                hook.SetReturn(false);
                 return HookResult.Handled;
             }
  
