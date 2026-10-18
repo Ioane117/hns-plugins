@@ -226,7 +226,7 @@ public class Plugin : BasePlugin, IPluginConfig<Config>
 
         if (RediePlayers.Contains(player))
         {
-            hook.SetReturn(false);
+            hook.SetReturn(AcquireResult.NotAllowedByProhibition);
             return HookResult.Handled;
         }
 
