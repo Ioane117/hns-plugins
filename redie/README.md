@@ -36,3 +36,17 @@
 }
 ```
 </details>
+
+## hns-plugins fork
+Changes from upstream (Next-il/redie v0.0.2):
+- Builds against CounterStrikeSharp 1.0.376 (.NET 10). Damage blocking uses `Listeners.OnPlayerTakeDamagePre`, which replaced the `CBaseEntity_TakeDamageOldFunc` hook.
+- Ghosts can no longer pick up items (the pickup hook returned `Allowed` by mistake).
+
+### Build
+Needs the .NET 10 SDK.
+```
+dotnet build redie/src/Redie.csproj -c Release
+```
+
+### Install
+Copy `redie/src/bin/Release/net10.0/Redie.dll` to `addons/counterstrikesharp/plugins/Redie/` on the server. Do not copy `CounterStrikeSharp.API.dll` or the other dependency DLLs from the build folder; the server already has them.
