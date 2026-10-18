@@ -344,11 +344,13 @@ void utils::PrintHTMLCentre(CBaseEntity *entity, const char *format, ...)
 	{
 		return;
 	}
-	event->SetString("loc_token", buffer.Get());
-	event->SetInt("duration", 1);
-	event->SetInt("userid", -1);
-
 	CPlayerSlot slot = controller->entindex() - 1;
+	// Same fields CounterStrikeSharp's PrintToCenterHtml sends. userid -1 made the client replay the panel's
+	// open animation on every update; with the receiving player's own userid it updates in place.
+	event->SetString("loc_token", buffer.Get());
+	event->SetInt("duration", 5);
+	event->SetPlayer("userid", slot);
+
 	IGameEventListener2 *listener = g_pKZUtils->GetLegacyGameEventListener(slot);
 	listener->FireGameEvent(event);
 	interfaces::pGameEventManager->FreeEvent(event);

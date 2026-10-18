@@ -13,11 +13,8 @@ namespace hns::hud
 {
 	// A mouse wheel jump is a press and release inside one tick. Keep Jump lit this long so it can be seen.
 	static constexpr i32 JUMP_SHOW_TICKS = 8;
-	// How often the HUD is checked for changes (in ticks).
-	static constexpr i32 REFRESH_TICKS = 2;
-	// Every send replays the panel's fade-in on the client, which looks like a flash. So the HUD is only resent when
-	// its text changes, plus this often to keep it on screen (one send lasts about a second).
-	static constexpr i32 KEEPALIVE_TICKS = 32;
+	// The HUD is resent every tick, like CounterStrikeSharp HUD plugins do. Sending less often, or only on change,
+	// makes the panel close and reopen between sends.
 
 	struct State
 	{
@@ -29,15 +26,6 @@ namespace hns::hud
 	};
 
 	static State states[MAXPLAYERS + 1];
-
-	// What each viewer was last sent, by viewer slot.
-	struct Sent
-	{
-		char text[128];
-		i32 tick;
-	};
-
-	static Sent sent[MAXPLAYERS + 1];
 
 	static_function i32 Tick()
 	{
@@ -56,11 +44,6 @@ namespace hns::hud
 		{
 			*state = {};
 		}
-		i32 slot = player ? player->GetPlayerSlot().Get() : -1;
-		if (slot >= 0 && slot <= MAXPLAYERS)
-		{
-			sent[slot] = {};
-		}
 	}
 
 	bool Toggle(HNSPlayer *player)
@@ -71,8 +54,6 @@ namespace hns::hud
 			return false;
 		}
 		state->hidden = !state->hidden;
-		i32 slot = player->GetPlayerSlot().Get();
-		sent[slot] = {};
 		if (state->hidden)
 		{
 			// Clear what is on screen now instead of letting the last send run out.
@@ -208,19 +189,6 @@ namespace hns::hud
 		V_snprintf(text, sizeof(text), "Speed: %i u/s%s<br>%s %s %s %s %s %s", speed, takeoff, Key(held, IN_FORWARD, "W"),
 				   Key(held, IN_MOVELEFT, "A"), Key(held, IN_BACK, "S"), Key(held, IN_MOVERIGHT, "D"), Key(held, IN_DUCK, "C"),
 				   Key(held, IN_JUMP, "J"));
-
-		i32 slot = viewer->GetPlayerSlot().Get();
-		if (slot < 0 || slot > MAXPLAYERS)
-		{
-			return;
-		}
-		Sent &last = sent[slot];
-		if (V_strcmp(last.text, text) == 0 && tick - last.tick < KEEPALIVE_TICKS && tick >= last.tick)
-		{
-			return;
-		}
-		V_strncpy(last.text, text, sizeof(last.text));
-		last.tick = tick;
 		utils::PrintHTMLCentre(viewer->GetController(), "%s", text);
 	}
 
@@ -231,10 +199,6 @@ namespace hns::hud
 			return;
 		}
 		i32 tick = Tick();
-		if (tick % REFRESH_TICKS != 0)
-		{
-			return;
-		}
 		for (i32 i = 0; i < MAXPLAYERS; i++)
 		{
 			HNSPlayer *player = g_pHNSPlayerManager->ToPlayer(CPlayerSlot(i));
