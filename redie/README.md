@@ -41,6 +41,7 @@
 Changes from upstream (Next-il/redie v0.0.2):
 - Builds against CounterStrikeSharp 1.0.376 (.NET 10). Damage blocking uses `Listeners.OnPlayerTakeDamagePre`, which replaced the `CBaseEntity_TakeDamageOldFunc` hook.
 - Ghosts can no longer pick up items (the pickup hook returned `Allowed` by mistake).
+- Ghosts are invincible. Upstream only blocked player and fall damage and took the player out of ghost mode on any other damage.
 
 ### Build
 Needs the .NET 10 SDK.

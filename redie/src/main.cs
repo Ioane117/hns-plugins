@@ -245,15 +245,12 @@ public class Plugin : BasePlugin, IPluginConfig<Config>
 
         if (RediePlayers.Contains(player))
         {
+            // The forced suicide that ends ghost mode must still go through.
             if (info.DamageFlags.HasFlag(TakeDamageFlags_t.DFLAG_FORCE_DEATH))
                 return HookResult.Continue;
 
-            if ((pawn.DesignerName == "player" && info.Attacker.Value?.DesignerName == "player") || info.BitsDamageType == DamageTypes_t.DMG_FALL)
-            {
-                return HookResult.Handled;
-            }
- 
-            UnRedie(player);
+            // Ghosts are invincible: block all other damage (players, falls, world, map hazards).
+            return HookResult.Handled;
         }
 
         return HookResult.Continue;
