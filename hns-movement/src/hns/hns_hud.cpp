@@ -25,6 +25,7 @@ namespace hns::hud
 		i32 jumpShowUntil {}; // tick until which Jump stays lit
 		f32 takeoffSpeed {};
 		bool hasTakeoff {};
+		bool hidden {}; // turned off by the player with hns_hud
 	};
 
 	static State states[MAXPLAYERS + 1];
@@ -60,6 +61,24 @@ namespace hns::hud
 		{
 			sent[slot] = {};
 		}
+	}
+
+	bool Toggle(HNSPlayer *player)
+	{
+		State *state = GetState(player);
+		if (!state)
+		{
+			return false;
+		}
+		state->hidden = !state->hidden;
+		i32 slot = player->GetPlayerSlot().Get();
+		sent[slot] = {};
+		if (state->hidden)
+		{
+			// Clear what is on screen now instead of letting the last send run out.
+			utils::PrintHTMLCentre(player->GetController(), " ");
+		}
+		return !state->hidden;
 	}
 
 	void OnProcessUsercmds(HNSPlayer *player, PlayerCommand *cmds, int numcmds)
@@ -158,6 +177,11 @@ namespace hns::hud
 
 	static_function void Show(HNSPlayer *viewer, i32 tick)
 	{
+		State *viewerState = GetState(viewer);
+		if (!viewerState || viewerState->hidden)
+		{
+			return;
+		}
 		HNSPlayer *viewed = GetViewedPlayer(viewer);
 		State *state = GetState(viewed);
 		if (!viewed || !state || !viewed->GetPlayerPawn())

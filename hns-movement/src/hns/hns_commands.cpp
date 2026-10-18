@@ -5,11 +5,12 @@
 #include "hns_weapons.h"
 #include "hns_gameplay.h"
 #include "hns_compat.h"
+#include "hns_hud.h"
 #include "utils/utils.h"
 
 #include "tier0/memdbgon.h"
 
-// All commands are server console / rcon only.
+// All commands are server console / rcon only, except hns_hud, which players run from their own console.
 static_function bool FromServer(const CCommandContext &context)
 {
 	if (context.GetPlayerSlot().Get() != -1)
@@ -82,4 +83,23 @@ void hns::commands::Init()
 {
 	// The commands above register themselves through META_CONVAR_REGISTER. Nothing else to do yet; the sweep test and the
 	// per-tick CSV logger (plan section 7, testing) will be added here.
+}
+
+// Players type this in their own console to turn their speed/key HUD off or back on. Lasts until they disconnect.
+CON_COMMAND_F(hns_hud, "Turn your speed and key HUD on or off.", FCVAR_CLIENT_CAN_EXECUTE)
+{
+	CPlayerSlot slot = context.GetPlayerSlot();
+	if (slot.Get() < 0)
+	{
+		META_CONPRINTF("hns_hud is a player command. To turn the HUD off for everyone, set hns_speed_hud 0 in the cfg.\n");
+		return;
+	}
+	HNSPlayer *player = g_pHNSPlayerManager->ToPlayer(slot);
+	if (!player || !player->GetController())
+	{
+		return;
+	}
+	bool on = hns::hud::Toggle(player);
+	utils::PrintConsole(player->GetController(), "Speed HUD %s.", on ? "on" : "off");
+	utils::PrintChat(player->GetController(), " Speed HUD %s.", on ? "on" : "off");
 }

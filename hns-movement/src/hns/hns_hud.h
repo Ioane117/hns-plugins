@@ -17,4 +17,6 @@ namespace hns::hud
 	void OnTakeoff(HNSPlayer *player);
 	void OnGameFrame();
 	void OnPlayerReset(HNSPlayer *player);
+	// Per-player switch (console command hns_hud). Returns the new state.
+	bool Toggle(HNSPlayer *player);
 } // namespace hns::hud
