@@ -2,6 +2,7 @@
 #include "hns_movement.h"
 #include "hns_cvars.h"
 #include "hns_config.h"
+#include "hns_hud.h"
 #include "hns_gameplay.h"
 #include "hns_weapons.h"
 #include "utils/utils.h"
@@ -40,6 +41,7 @@ void HNSPlayer::Reset()
 	MovementPlayer::Reset();
 	this->movement->Reset();
 	this->stats = {};
+	hns::hud::OnPlayerReset(this);
 }
 
 void HNSPlayer::OnPlayerActive()
@@ -82,6 +84,7 @@ void HNSPlayer::OnSetupMove(PlayerCommand *pc)
 
 void HNSPlayer::OnProcessUsercmds(PlayerCommand *cmds, int numcmds)
 {
+	hns::hud::OnProcessUsercmds(this, cmds, numcmds);
 	hns::weapons::RemapKnifeAttack(this, cmds, numcmds);
 }
 
@@ -194,6 +197,10 @@ void HNSPlayer::OnStopTouchGround()
 		}
 	}
 	this->stats.lastTakeoffSpeed = this->takeoffVelocity.Length2D();
+	if (this->jumped)
+	{
+		hns::hud::OnTakeoff(this);
+	}
 	this->stats.lastTimeOnGround = this->takeoffTime - this->landingTime;
 
 	if (hns::config::settings.debugPerf && this->jumped)

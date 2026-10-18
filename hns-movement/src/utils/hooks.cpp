@@ -18,6 +18,7 @@
 #include "hns/hns_player.h"
 #include "hns/hns_movement.h"
 #include "hns/hns_gameplay.h"
+#include "hns/hns_hud.h"
 #include "hns/hns_weapons.h"
 #include "sdk/takedamageinfo.h"
 #include "sdk/usercmd.h"
@@ -73,6 +74,7 @@ static KHook::Return<void> GameFramePre(ISource2Server *pThis, bool simulating, 
 	g_HNSPlugin.serverGlobals = *(g_pKZUtils->GetGlobals());
 	hns::gameplay::OnGameFrame();
 	hns::weapons::OnGameFrame();
+	hns::hud::OnGameFrame();
 	return {KHook::Action::Ignore};
 }
 
