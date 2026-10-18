@@ -18,6 +18,8 @@
 #include "hns/hns_player.h"
 #include "hns/hns_movement.h"
 #include "hns/hns_gameplay.h"
+#include "hns/hns_hud.h"
+#include "hns/hns_commands.h"
 #include "hns/hns_weapons.h"
 #include "sdk/takedamageinfo.h"
 #include "sdk/usercmd.h"
@@ -73,6 +75,7 @@ static KHook::Return<void> GameFramePre(ISource2Server *pThis, bool simulating, 
 	g_HNSPlugin.serverGlobals = *(g_pKZUtils->GetGlobals());
 	hns::gameplay::OnGameFrame();
 	hns::weapons::OnGameFrame();
+	hns::hud::OnGameFrame();
 	return {KHook::Action::Ignore};
 }
 
@@ -132,6 +135,19 @@ static KHook::Return<bool> FireEventPre(IGameEventManager2 *pThis, IGameEvent *e
 }
 
 static KHook::Virtual<IGameEventManager2, bool, IGameEvent *, bool> fireEventHook(FireEventPre, nullptr);
+
+// Chat commands (!hud, /hud). say and say_team are dispatched through ICvar like every other command.
+static KHook::Return<void> DispatchConCommandPre(ICvar *pThis, ConCommandRef cmd, const CCommandContext &context, const CCommand &args)
+{
+	if (hns::commands::OnSay(context, args))
+	{
+		return {KHook::Action::Supersede};
+	}
+	return {KHook::Action::Ignore};
+}
+
+static KHook::Virtual<ICvar, void, ConCommandRef, const CCommandContext &, const CCommand &> dispatchConCommandHook(DispatchConCommandPre,
+																												nullptr);
 
 // ============================================================
 // IGameSystem hooks (CEntityDebugGameSystem vtable)
@@ -828,6 +844,9 @@ bool hooks::Initialize(char *error, size_t maxlen)
 	fireEventHook.Configure(VtableIndex(&IGameEventManager2::FireEvent));
 	fireEventHook.Add(interfaces::pGameEventManager);
 
+	dispatchConCommandHook.Configure(VtableIndex(&ICvar::DispatchConCommand));
+	dispatchConCommandHook.Add(g_pCVar);
+
 	{
 		void *vtable = modules::server->FindVirtualTable("CEntityDebugGameSystem");
 		serverGamePostSimulateHook.Configure(VtableIndex(&IGameSystem::OnServerGamePostSimulate));
@@ -867,6 +886,7 @@ void hooks::Cleanup()
 	clientActiveHook.ClearHooks();
 	clientDisconnectHook.ClearHooks();
 	fireEventHook.ClearHooks();
+	dispatchConCommandHook.ClearHooks();
 	serverGamePostSimulateHook.ClearHooks();
 
 	hns::movement::CleanupTraceHook();

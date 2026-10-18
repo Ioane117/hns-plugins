@@ -75,6 +75,7 @@ def configure_main(sdk_target, sdk, cxx, protoc_builder):
     os.path.join(builder.sourcePath, 'src', 'hns', 'hns_gameplay.cpp'),
     os.path.join(builder.sourcePath, 'src', 'hns', 'hns_weapons.cpp'),
     os.path.join(builder.sourcePath, 'src', 'hns', 'hns_compat.cpp'),
+    os.path.join(builder.sourcePath, 'src', 'hns', 'hns_hud.cpp'),
   ]
 
   if binary.compiler.target.platform == 'linux':
