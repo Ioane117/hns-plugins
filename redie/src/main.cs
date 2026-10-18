@@ -16,12 +16,16 @@ public class Plugin : BasePlugin, IPluginConfig<Config>
 
     public HashSet<CCSPlayerController> RediePlayers = new();
 
+    // Set from round_end until the next round_start. New ghosts are not allowed then.
+    bool roundOver;
+
     public override void Load(bool hotReload)
     {
         foreach (var cmd in Config.Commands)
             AddCommand(cmd, "Redie Command", (player, command) => Command_Redie(player));
 
         RegisterEventHandler<EventRoundStart>(EventRoundStart, HookMode.Pre);
+        RegisterEventHandler<EventRoundEnd>(EventRoundEnd);
         RegisterEventHandler<EventPlayerTeam>(EventPlayerTeam);
         RegisterEventHandler<EventPlayerDeath>(EventPlayerDeath, HookMode.Pre);
 
@@ -41,6 +45,7 @@ public class Plugin : BasePlugin, IPluginConfig<Config>
             RemoveCommand(cmd, (player, command) => Command_Redie(player));
 
         DeregisterEventHandler<EventRoundStart>(EventRoundStart, HookMode.Pre);
+        DeregisterEventHandler<EventRoundEnd>(EventRoundEnd);
         DeregisterEventHandler<EventPlayerTeam>(EventPlayerTeam);
         DeregisterEventHandler<EventPlayerDeath>(EventPlayerDeath, HookMode.Pre);
 
@@ -67,7 +72,16 @@ public class Plugin : BasePlugin, IPluginConfig<Config>
             return;
 
         if (!RediePlayers.Contains(player))
+        {
+            // Leaving ghost mode still works after the round ends; becoming a ghost does not.
+            if (roundOver)
+            {
+                if (Config.Messages)
+                    player.PrintToChat($"{Config.Prefix} {Config.Message_RoundOver}");
+                return;
+            }
             Redie(player);
+        }
 
         else UnRedie(player);
     }
@@ -115,6 +129,14 @@ public class Plugin : BasePlugin, IPluginConfig<Config>
     HookResult EventRoundStart(EventRoundStart @event, GameEventInfo info)
     {
         RediePlayers.Clear();
+        roundOver = false;
+
+        return HookResult.Continue;
+    }
+
+    HookResult EventRoundEnd(EventRoundEnd @event, GameEventInfo info)
+    {
+        roundOver = true;
 
         return HookResult.Continue;
     }

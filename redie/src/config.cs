@@ -7,4 +7,5 @@ public class Config : BasePluginConfig
     public bool Messages { get; set; } = true;
     public string Message_Redie { get; set; } = "You have been respawned as a ghost";
     public string Message_UnRedie { get; set; } = "You are no longer a ghost";
+    public string Message_RoundOver { get; set; } = "You can't become a ghost after the round has ended";
 }

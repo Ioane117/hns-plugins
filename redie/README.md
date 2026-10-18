@@ -32,7 +32,8 @@
   "Commands": ["css_redie", "css_ghost"],
   "Messages": true,
   "Message_Redie": "You have been respawned as a ghost",
-  "Message_UnRedie": "You are no longer a ghost"
+  "Message_UnRedie": "You are no longer a ghost",
+  "Message_RoundOver": "You can't become a ghost after the round has ended"
 }
 ```
 </details>
@@ -42,6 +43,7 @@ Changes from upstream (Next-il/redie v0.0.2):
 - Builds against CounterStrikeSharp 1.0.376 (.NET 10). Damage blocking uses `Listeners.OnPlayerTakeDamagePre`, which replaced the `CBaseEntity_TakeDamageOldFunc` hook.
 - Ghosts can no longer pick up items (the pickup hook returned `Allowed` by mistake).
 - Ghosts are invincible. Upstream only blocked player and fall damage and took the player out of ghost mode on any other damage.
+- Becoming a ghost is not allowed between round end and the next round start (`Message_RoundOver`). Leaving ghost mode still works.
 
 ### Build
 Needs the .NET 10 SDK.
